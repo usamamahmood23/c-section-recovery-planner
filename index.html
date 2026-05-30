@@ -1,0 +1,2033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<meta name="theme-color" content="#E8B4B8" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="CS Recovery" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<title>C-Section Recovery Planner</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<style>
+:root {
+  --color-primary: #E8B4B8;
+  --color-primary-dark: #C47A7D;
+  --color-primary-light: #F5DEDE;
+  --color-success: #8BAF9B;
+  --color-success-light: #D4EAE0;
+  --color-warning: #E8C97A;
+  --color-warning-light: #FAF0D0;
+  --color-danger: #E07070;
+  --color-danger-light: #FAE0E0;
+  --color-surface: #FDF8F5;
+  --color-surface-2: #F5EDE8;
+  --color-surface-3: #EDE0D8;
+  --color-text-primary: #2D2420;
+  --color-text-secondary: #7A6560;
+  --color-text-muted: #B5A09A;
+  --color-white: #FFFFFF;
+  --font-heading: 'Fraunces', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --shadow-sm: 0 1px 4px rgba(45,36,32,0.06);
+  --shadow-md: 0 4px 16px rgba(45,36,32,0.10);
+  --shadow-lg: 0 8px 32px rgba(45,36,32,0.14);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { background: var(--color-surface); color: var(--color-text-primary); font-family: var(--font-body); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+body { min-height: 100vh; min-height: 100dvh; overflow-x: hidden; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; font-size: inherit; }
+input, select, textarea { font-family: inherit; font-size: inherit; color: inherit; }
+h1, h2, h3, h4 { font-family: var(--font-heading); font-weight: 600; line-height: 1.2; color: var(--color-text-primary); letter-spacing: -0.01em; }
+a { color: var(--color-primary-dark); text-decoration: none; }
+::selection { background: var(--color-primary-light); }
+
+/* Layout */
+.app-container { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
+.main-content { flex: 1; padding: 1rem; padding-top: max(1rem, env(safe-area-inset-top)); padding-bottom: calc(80px + env(safe-area-inset-bottom)); width: 100%; max-width: 100%; }
+
+/* Sidebar (desktop) */
+.sidebar { display: none; }
+
+/* Bottom nav (mobile) */
+.bottom-nav { display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: calc(64px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: var(--color-white); border-top: 1px solid var(--color-surface-3); z-index: 100; box-shadow: 0 -2px 12px rgba(45,36,32,0.04); }
+.bottom-nav .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--color-text-muted); padding: 6px 4px; position: relative; transition: color 0.2s; }
+.bottom-nav .nav-item i { font-size: 22px; }
+.bottom-nav .nav-item span { font-size: 10px; font-weight: 500; }
+.bottom-nav .nav-item.active { color: var(--color-primary-dark); }
+.bottom-nav .nav-item.active::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 24px; height: 3px; background: var(--color-primary-dark); border-radius: 0 0 4px 4px; }
+
+@media (min-width: 768px) {
+  .app-container { flex-direction: row; }
+  .sidebar { display: flex; flex-direction: column; width: 240px; min-height: 100vh; position: fixed; left: 0; top: 0; bottom: 0; background: var(--color-white); border-right: 1px solid var(--color-surface-3); padding: 1.5rem 1rem; z-index: 50; }
+  .sidebar-brand { display: flex; align-items: center; gap: 10px; padding: 0 0.5rem 1.5rem; border-bottom: 1px solid var(--color-surface-3); margin-bottom: 1rem; }
+  .sidebar-brand-icon { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)); display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; }
+  .sidebar-brand-text { font-family: var(--font-heading); font-weight: 600; font-size: 16px; line-height: 1.1; }
+  .sidebar-brand-text small { display: block; font-family: var(--font-body); font-size: 11px; color: var(--color-text-muted); font-weight: 400; }
+  .sidebar-nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+  .sidebar-nav .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--radius-md); color: var(--color-text-secondary); font-size: 14px; font-weight: 500; transition: all 0.2s; }
+  .sidebar-nav .nav-item i { font-size: 20px; }
+  .sidebar-nav .nav-item span { font-size: 14px; }
+  .sidebar-nav .nav-item:hover { background: var(--color-surface-2); color: var(--color-text-primary); }
+  .sidebar-nav .nav-item.active { background: var(--color-primary-light); color: var(--color-primary-dark); }
+  .sidebar-phase { margin-top: 1rem; padding: 1rem; background: var(--color-surface-2); border-radius: var(--radius-md); font-size: 12px; }
+  .sidebar-phase-label { color: var(--color-text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .sidebar-phase-name { font-family: var(--font-heading); font-weight: 600; font-size: 14px; }
+  .sidebar-user { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: var(--radius-md); margin-top: 1rem; background: var(--color-surface); }
+  .sidebar-user-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--color-primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px; }
+  .sidebar-user-name { font-size: 13px; font-weight: 500; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .main-content { margin-left: 240px; padding: 2rem; padding-bottom: 2rem; max-width: 980px; }
+  .bottom-nav { display: none; }
+}
+
+/* Screen */
+.screen { display: none; animation: fadeUp 0.25s ease; }
+.screen.active { display: block; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.screen-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+.screen-title { font-family: var(--font-heading); font-size: 28px; font-weight: 600; }
+.screen-subtitle { color: var(--color-text-secondary); font-size: 14px; margin-top: 4px; }
+
+/* Cards */
+.card { background: var(--color-white); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-sm); border: 1px solid var(--color-surface-3); }
+.card-padded { padding: 1.5rem; }
+
+/* Hero card */
+.hero-card { background: linear-gradient(135deg, #F5DEDE 0%, #E8B4B8 60%, #C47A7D 100%); color: var(--color-white); border-radius: var(--radius-xl); padding: 1.5rem; margin-bottom: 1rem; position: relative; overflow: hidden; border: none; }
+.hero-card::before { content: ''; position: absolute; right: -40px; top: -40px; width: 160px; height: 160px; border-radius: 50%; background: rgba(255,255,255,0.12); }
+.hero-card::after { content: ''; position: absolute; right: 40px; bottom: -30px; width: 80px; height: 80px; border-radius: 50%; background: rgba(255,255,255,0.08); }
+.hero-greet { font-family: var(--font-heading); font-size: 26px; font-weight: 600; line-height: 1.15; position: relative; }
+.hero-day { font-size: 13px; opacity: 0.9; margin-top: 4px; position: relative; }
+.hero-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; background: rgba(255,255,255,0.22); backdrop-filter: blur(6px); border-radius: 100px; font-size: 12px; font-weight: 500; margin-top: 12px; position: relative; }
+.hero-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-white); }
+.hero-progress { margin-top: 14px; position: relative; }
+.hero-progress-track { height: 6px; background: rgba(255,255,255,0.25); border-radius: 100px; overflow: hidden; }
+.hero-progress-fill { height: 100%; background: var(--color-white); border-radius: 100px; transition: width 1s ease; width: 0%; }
+.hero-progress-text { font-size: 11px; opacity: 0.85; margin-top: 6px; }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 18px; border-radius: var(--radius-md); font-weight: 600; font-size: 14px; transition: all 0.2s; min-height: 44px; }
+.btn-primary { background: var(--color-primary-dark); color: var(--color-white); }
+.btn-primary:hover { background: #B36568; transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.btn-primary:active { transform: translateY(0); }
+.btn-secondary { background: var(--color-surface-2); color: var(--color-text-primary); }
+.btn-secondary:hover { background: var(--color-surface-3); }
+.btn-success { background: var(--color-success); color: var(--color-white); }
+.btn-ghost { background: transparent; color: var(--color-primary-dark); }
+.btn-danger { background: var(--color-danger); color: var(--color-white); }
+.btn-block { display: flex; width: 100%; }
+.btn-lg { padding: 14px 22px; font-size: 15px; min-height: 52px; border-radius: var(--radius-lg); }
+.btn-sm { padding: 8px 12px; font-size: 13px; min-height: 36px; }
+.btn-icon { width: 40px; height: 40px; padding: 0; border-radius: 50%; }
+
+/* Inputs */
+.input, .select, .textarea { width: 100%; padding: 12px 14px; border: 1px solid var(--color-surface-3); border-radius: var(--radius-md); background: var(--color-white); color: var(--color-text-primary); font-size: 15px; transition: border-color 0.2s, box-shadow 0.2s; }
+.input:focus, .select:focus, .textarea:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
+.textarea { resize: vertical; min-height: 90px; }
+.label { display: block; font-size: 13px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 6px; }
+.field { margin-bottom: 1rem; }
+
+/* Pills */
+.pill-group { display: flex; flex-wrap: wrap; gap: 8px; }
+.pill { padding: 10px 14px; border-radius: 100px; background: var(--color-white); border: 1.5px solid var(--color-surface-3); font-size: 13px; font-weight: 500; color: var(--color-text-secondary); cursor: pointer; transition: all 0.2s; min-height: 40px; display: inline-flex; align-items: center; }
+.pill:hover { border-color: var(--color-primary); }
+.pill.active { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary-dark); }
+
+/* Stats grid */
+.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 1rem 0; }
+.stat-card { background: var(--color-white); border-radius: var(--radius-md); padding: 14px 10px; text-align: center; border: 1px solid var(--color-surface-3); }
+.stat-value { font-family: var(--font-heading); font-size: 24px; font-weight: 600; color: var(--color-text-primary); line-height: 1; }
+.stat-label { font-size: 11px; color: var(--color-text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+.stat-card.streak .stat-value { color: var(--color-primary-dark); animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+
+/* Checklist */
+.checklist { list-style: none; }
+.checklist li { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--color-surface-2); cursor: pointer; }
+.checklist li:last-child { border-bottom: none; }
+.checklist .checkbox { width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--color-surface-3); display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+.checklist li.checked .checkbox { background: var(--color-success); border-color: var(--color-success); color: white; }
+.checklist li.checked span { color: var(--color-text-muted); text-decoration: line-through; }
+.checklist .checkbox i { font-size: 14px; opacity: 0; transition: opacity 0.2s; }
+.checklist li.checked .checkbox i { opacity: 1; }
+
+/* Section header */
+.section-header { display: flex; align-items: baseline; justify-content: space-between; margin: 1.5rem 0 0.75rem; }
+.section-title { font-family: var(--font-heading); font-size: 18px; font-weight: 600; }
+.section-link { font-size: 13px; color: var(--color-primary-dark); }
+
+/* Phase stepper */
+.phase-stepper { display: flex; gap: 4px; margin-top: 12px; }
+.phase-step { flex: 1; cursor: pointer; }
+.phase-step-bar { height: 6px; border-radius: 100px; background: var(--color-surface-2); transition: background 0.3s; }
+.phase-step.complete .phase-step-bar { background: var(--color-success); }
+.phase-step.current .phase-step-bar { background: var(--color-primary); box-shadow: 0 0 0 2px var(--color-primary-light); }
+.phase-step-label { font-size: 10px; color: var(--color-text-muted); margin-top: 4px; text-align: center; }
+.phase-step.current .phase-step-label { color: var(--color-primary-dark); font-weight: 600; }
+
+/* Today workout card */
+.workout-card { background: var(--color-white); border: 1px solid var(--color-surface-3); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1rem; box-shadow: var(--shadow-sm); position: relative; overflow: hidden; }
+.workout-card.completed { background: var(--color-success-light); border-color: var(--color-success); }
+.workout-card-tag { display: inline-block; padding: 3px 10px; background: var(--color-primary-light); color: var(--color-primary-dark); border-radius: 100px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px; }
+.workout-card h3 { font-size: 20px; margin-bottom: 6px; }
+.workout-card-meta { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--color-text-secondary); margin-bottom: 14px; }
+.workout-card-meta i { color: var(--color-primary-dark); }
+.difficulty { display: inline-flex; gap: 3px; align-items: center; }
+.difficulty .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-surface-3); }
+.difficulty .dot.on { background: var(--color-primary-dark); }
+
+/* Exercises grid */
+.exercise-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+@media (min-width: 600px) { .exercise-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 900px) { .exercise-grid { grid-template-columns: repeat(3, 1fr); } }
+.exercise-card { background: var(--color-white); border: 1px solid var(--color-surface-3); border-radius: var(--radius-md); padding: 14px; cursor: pointer; position: relative; transition: transform 0.2s, box-shadow 0.2s; }
+.exercise-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.exercise-card.locked { opacity: 0.65; }
+.exercise-card.locked::after { content: ''; position: absolute; inset: 0; background: rgba(253,248,245,0.4); border-radius: var(--radius-md); pointer-events: none; }
+.exercise-cat { display: inline-block; padding: 2px 8px; background: var(--color-surface-2); color: var(--color-text-secondary); font-size: 10px; border-radius: 100px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+.exercise-cat.breathing { background: #E8F0F5; color: #5380A0; }
+.exercise-cat.pelvic { background: #F0E8F5; color: #8060A0; }
+.exercise-cat.mobility { background: var(--color-warning-light); color: #A08040; }
+.exercise-cat.core { background: var(--color-primary-light); color: var(--color-primary-dark); }
+.exercise-cat.lower { background: var(--color-success-light); color: #4A7060; }
+.exercise-cat.full { background: #E0DCF0; color: #5A4F80; }
+.exercise-card h4 { font-family: var(--font-heading); font-size: 15px; margin: 8px 0 4px; line-height: 1.2; }
+.exercise-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; font-size: 11px; color: var(--color-text-secondary); }
+.lock-overlay { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; background: rgba(45,36,32,0.7); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; z-index: 2; }
+
+/* Tabs */
+.tabs { display: flex; gap: 6px; overflow-x: auto; padding: 4px 0 10px; margin-bottom: 0.5rem; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { padding: 8px 14px; background: var(--color-white); border: 1px solid var(--color-surface-3); border-radius: 100px; font-size: 13px; font-weight: 500; color: var(--color-text-secondary); white-space: nowrap; cursor: pointer; }
+.tab.active { background: var(--color-text-primary); color: white; border-color: var(--color-text-primary); }
+
+/* Search */
+.search-box { position: relative; margin-bottom: 0.5rem; }
+.search-box i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); }
+.search-box input { padding-left: 42px; }
+
+/* Bottom sheet */
+.sheet-backdrop { position: fixed; inset: 0; background: rgba(45,36,32,0.5); z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+.sheet-backdrop.open { opacity: 1; pointer-events: auto; }
+.sheet { position: fixed; left: 0; right: 0; bottom: 0; background: var(--color-white); border-radius: var(--radius-xl) var(--radius-xl) 0 0; z-index: 201; transform: translateY(100%); transition: transform 0.3s ease; max-height: 90vh; overflow-y: auto; padding: 1.25rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom)); padding-top: 12px; }
+.sheet.open { transform: translateY(0); }
+.sheet-handle { width: 44px; height: 4px; background: var(--color-surface-3); border-radius: 100px; margin: 0 auto 1rem; }
+.sheet-title { font-family: var(--font-heading); font-size: 22px; margin-bottom: 6px; }
+@media (min-width: 768px) {
+  .sheet { left: 50%; right: auto; transform: translate(-50%, 100%); width: 560px; border-radius: var(--radius-xl); bottom: 5vh; max-height: 80vh; }
+  .sheet.open { transform: translate(-50%, 0); }
+}
+
+/* Warning box */
+.warning-box { background: var(--color-warning-light); border-left: 4px solid var(--color-warning); border-radius: var(--radius-sm); padding: 12px 14px; font-size: 13px; color: #6E5520; margin: 10px 0; }
+.warning-box.danger { background: var(--color-danger-light); border-left-color: var(--color-danger); color: #8B3030; }
+.warning-box strong { display: block; margin-bottom: 4px; }
+
+/* Steps list */
+.steps-list { padding-left: 0; list-style: none; counter-reset: stepcount; margin: 10px 0; }
+.steps-list li { counter-increment: stepcount; position: relative; padding: 6px 0 6px 32px; font-size: 14px; color: var(--color-text-secondary); }
+.steps-list li::before { content: counter(stepcount); position: absolute; left: 0; top: 6px; width: 22px; height: 22px; background: var(--color-primary-light); color: var(--color-primary-dark); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; }
+
+/* Onboarding */
+.onboarding-overlay { position: fixed; inset: 0; background: var(--color-surface); z-index: 500; padding: 1.5rem; padding-top: max(2rem, env(safe-area-inset-top)); padding-bottom: max(2rem, env(safe-area-inset-bottom)); display: flex; flex-direction: column; overflow-y: auto; }
+.onb-progress { display: flex; gap: 6px; margin-bottom: 1.5rem; }
+.onb-progress .step { flex: 1; height: 4px; border-radius: 100px; background: var(--color-surface-3); }
+.onb-progress .step.active { background: var(--color-primary-dark); }
+.onb-step { display: none; flex: 1; flex-direction: column; max-width: 480px; margin: 0 auto; width: 100%; }
+.onb-step.active { display: flex; }
+.onb-illustration { width: 200px; height: 200px; margin: 1rem auto 1.5rem; }
+.onb-step h1 { font-size: 32px; margin-bottom: 12px; text-align: center; }
+.onb-step .sub { color: var(--color-text-secondary); text-align: center; margin-bottom: 1.5rem; }
+.onb-step .actions { margin-top: auto; padding-top: 1.5rem; }
+
+/* Active workout */
+.workout-active { background: linear-gradient(180deg, var(--color-surface) 0%, var(--color-primary-light) 100%); min-height: 100vh; padding: 1.5rem; padding-top: max(1.5rem, env(safe-area-inset-top)); padding-bottom: max(1.5rem, env(safe-area-inset-bottom)); display: none; flex-direction: column; position: fixed; inset: 0; z-index: 400; }
+.workout-active.active { display: flex; }
+.workout-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.workout-progress-track { height: 6px; background: var(--color-surface-3); border-radius: 100px; overflow: hidden; margin-bottom: 1.5rem; }
+.workout-progress-fill { height: 100%; background: var(--color-primary-dark); border-radius: 100px; transition: width 0.4s ease; }
+.workout-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 1rem; }
+.timer-ring { width: 220px; height: 220px; position: relative; margin: 1rem 0; }
+.timer-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.timer-ring circle { fill: none; stroke-width: 10; stroke-linecap: round; }
+.timer-ring .bg { stroke: var(--color-surface-2); }
+.timer-ring .fg { stroke: var(--color-primary-dark); stroke-dasharray: 628; stroke-dashoffset: 0; transition: stroke-dashoffset 0.5s linear; }
+.timer-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: var(--font-heading); font-size: 48px; font-weight: 600; }
+.workout-actions { display: flex; gap: 10px; width: 100%; max-width: 360px; margin-top: 1rem; }
+.workout-actions .btn { flex: 1; }
+
+/* Confetti */
+.confetti { position: fixed; inset: 0; pointer-events: none; z-index: 600; overflow: hidden; }
+.confetti-piece { position: absolute; width: 10px; height: 10px; top: -20px; opacity: 0; animation: confetti-fall 2.5s ease-in forwards; border-radius: 2px; }
+@keyframes confetti-fall { 0% { transform: translateY(0) rotate(0); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0.6; } }
+
+/* Mood */
+.mood-row { display: flex; gap: 6px; justify-content: space-between; }
+.mood-btn { flex: 1; padding: 12px 4px; background: var(--color-white); border: 2px solid var(--color-surface-3); border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s; font-size: 28px; }
+.mood-btn.active { border-color: var(--color-primary); background: var(--color-primary-light); transform: scale(1.05); }
+
+/* Slider */
+.slider-wrap { padding: 6px 0; }
+.range { -webkit-appearance: none; width: 100%; height: 8px; border-radius: 100px; background: linear-gradient(to right, #8BAF9B 0%, #E8C97A 50%, #E07070 100%); outline: none; }
+.range::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: white; border: 2px solid var(--color-primary-dark); cursor: pointer; box-shadow: var(--shadow-sm); }
+.range::-moz-range-thumb { width: 24px; height: 24px; border-radius: 50%; background: white; border: 2px solid var(--color-primary-dark); cursor: pointer; }
+.range-row { display: flex; justify-content: space-between; font-size: 11px; color: var(--color-text-muted); margin-top: 4px; }
+
+/* Calendar */
+.calendar { background: var(--color-white); border-radius: var(--radius-lg); padding: 1rem; border: 1px solid var(--color-surface-3); }
+.cal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.cal-month { font-family: var(--font-heading); font-weight: 600; font-size: 16px; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal-dow { text-align: center; font-size: 10px; color: var(--color-text-muted); font-weight: 600; text-transform: uppercase; padding: 4px 0; }
+.cal-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 12px; cursor: pointer; background: var(--color-surface); color: var(--color-text-secondary); position: relative; }
+.cal-day.empty { background: transparent; cursor: default; }
+.cal-day.today { box-shadow: 0 0 0 2px var(--color-primary-dark); }
+.cal-day.mood-great { background: var(--color-success); color: white; }
+.cal-day.mood-good { background: var(--color-success-light); color: #4A7060; }
+.cal-day.mood-okay { background: var(--color-warning-light); color: #8B6520; }
+.cal-day.mood-low { background: #F5D5BE; color: #8B5530; }
+.cal-day.mood-rough { background: var(--color-danger-light); color: #8B3030; }
+
+/* Journal entries list */
+.entry-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--color-surface-2); }
+.entry-row:last-child { border-bottom: none; }
+.entry-emoji { font-size: 24px; }
+.entry-info { flex: 1; min-width: 0; }
+.entry-date { font-size: 13px; font-weight: 600; }
+.entry-preview { font-size: 12px; color: var(--color-text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.entry-pain { font-size: 11px; color: var(--color-text-muted); }
+
+/* Badges grid */
+.badges-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 1rem; }
+@media (min-width: 600px) { .badges-grid { grid-template-columns: repeat(3, 1fr); } }
+.badge { background: var(--color-white); border: 1px solid var(--color-surface-3); border-radius: var(--radius-md); padding: 14px 10px; text-align: center; }
+.badge-icon { width: 56px; height: 56px; margin: 0 auto 8px; border-radius: 50%; background: var(--color-surface-2); display: flex; align-items: center; justify-content: center; font-size: 26px; color: var(--color-text-muted); transition: all 0.4s; }
+.badge.earned .badge-icon { background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)); color: white; animation: pop 0.5s ease; }
+@keyframes pop { 0% { transform: scale(0.5); } 60% { transform: scale(1.1); } 100% { transform: scale(1); } }
+.badge-name { font-size: 12px; font-weight: 600; line-height: 1.2; }
+.badge-date { font-size: 10px; color: var(--color-text-muted); margin-top: 4px; }
+
+/* Accordion */
+.accordion-item { background: var(--color-white); border: 1px solid var(--color-surface-3); border-radius: var(--radius-md); margin-bottom: 8px; overflow: hidden; }
+.accordion-head { padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-weight: 600; font-size: 14px; }
+.accordion-head i { transition: transform 0.2s; color: var(--color-text-muted); }
+.accordion-item.open .accordion-head i { transform: rotate(180deg); }
+.accordion-body { display: none; padding: 0 16px 16px; font-size: 13px; line-height: 1.6; color: var(--color-text-secondary); }
+.accordion-item.open .accordion-body { display: block; }
+
+/* Disclaimer banner */
+.disclaimer-banner { background: var(--color-warning-light); border: 1px solid var(--color-warning); border-radius: var(--radius-md); padding: 10px 12px; font-size: 12px; color: #6E5520; display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; }
+.disclaimer-banner i { font-size: 18px; flex-shrink: 0; }
+.disclaimer-banner button { margin-left: auto; padding: 0; color: #6E5520; opacity: 0.6; }
+
+/* Install banner */
+.install-banner { position: fixed; bottom: calc(80px + env(safe-area-inset-bottom)); left: 12px; right: 12px; background: var(--color-text-primary); color: white; padding: 14px; border-radius: var(--radius-md); display: none; align-items: center; gap: 10px; box-shadow: var(--shadow-lg); z-index: 150; }
+.install-banner.visible { display: flex; }
+.install-banner .info { flex: 1; font-size: 13px; }
+.install-banner .info strong { display: block; font-size: 14px; }
+.install-banner button { padding: 8px 14px; background: var(--color-primary); color: white; border-radius: var(--radius-sm); font-weight: 600; font-size: 13px; }
+.install-banner .dismiss { background: transparent; padding: 4px; }
+@media (min-width: 768px) { .install-banner { bottom: 24px; max-width: 360px; left: auto; right: 24px; } }
+
+/* Profile avatar large */
+.profile-avatar { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)); color: white; display: flex; align-items: center; justify-content: center; font-family: var(--font-heading); font-weight: 600; font-size: 28px; }
+
+/* Toggle switch */
+.toggle { position: relative; width: 44px; height: 26px; background: var(--color-surface-3); border-radius: 100px; cursor: pointer; transition: background 0.2s; flex-shrink: 0; }
+.toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: transform 0.2s; box-shadow: var(--shadow-sm); }
+.toggle.on { background: var(--color-success); }
+.toggle.on::after { transform: translateX(18px); }
+
+.list-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--color-surface-2); gap: 12px; }
+.list-row:last-child { border-bottom: none; }
+.list-row .label { margin-bottom: 0; color: var(--color-text-primary); font-weight: 500; font-size: 14px; }
+.list-row .sub { font-size: 12px; color: var(--color-text-secondary); }
+
+/* Helpers */
+.row { display: flex; align-items: center; gap: 10px; }
+.flex-1 { flex: 1; }
+.mt-1 { margin-top: 0.5rem; } .mt-2 { margin-top: 1rem; } .mt-3 { margin-top: 1.5rem; }
+.mb-1 { margin-bottom: 0.5rem; } .mb-2 { margin-bottom: 1rem; }
+.text-center { text-align: center; }
+.text-sm { font-size: 13px; }
+.text-muted { color: var(--color-text-muted); }
+.text-secondary { color: var(--color-text-secondary); }
+
+/* Milestone card */
+.milestone-card { display: flex; gap: 10px; padding: 10px 12px; background: var(--color-surface-2); border-radius: var(--radius-md); margin-bottom: 8px; align-items: center; }
+.milestone-card i { color: var(--color-primary-dark); font-size: 20px; }
+.milestone-card-body { flex: 1; }
+.milestone-card-title { font-size: 13px; font-weight: 600; }
+.milestone-card-sub { font-size: 11px; color: var(--color-text-muted); }
+</style>
+</head>
+<body>
+
+<!-- Onboarding Overlay -->
+<div class="onboarding-overlay" id="onboarding" style="display:none;">
+  <div class="onb-progress">
+    <div class="step" id="onbStep1Dot"></div>
+    <div class="step" id="onbStep2Dot"></div>
+    <div class="step" id="onbStep3Dot"></div>
+  </div>
+
+  <div class="onb-step" id="onbStep1">
+    <svg class="onb-illustration" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="bg-grad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#F5DEDE"/>
+          <stop offset="100%" stop-color="#E8B4B8"/>
+        </linearGradient>
+      </defs>
+      <circle cx="100" cy="100" r="90" fill="url(#bg-grad)" opacity="0.5"/>
+      <circle cx="100" cy="80" r="32" fill="#FDF8F5"/>
+      <ellipse cx="100" cy="148" rx="48" ry="36" fill="#FDF8F5"/>
+      <circle cx="125" cy="120" r="16" fill="#C47A7D"/>
+      <circle cx="125" cy="116" r="6" fill="#FDF8F5"/>
+      <path d="M 60 100 Q 80 140 140 130" stroke="#C47A7D" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.4"/>
+      <circle cx="158" cy="60" r="6" fill="#8BAF9B" opacity="0.7"/>
+      <circle cx="40" cy="70" r="4" fill="#E8C97A" opacity="0.7"/>
+      <circle cx="170" cy="120" r="3" fill="#8BAF9B" opacity="0.6"/>
+    </svg>
+    <h1>Your recovery,<br/>your pace.</h1>
+    <p class="sub">A gentle guide back to strength after your C-section.</p>
+    <div class="actions">
+      <button class="btn btn-primary btn-block btn-lg" onclick="nextOnbStep(2)">Get Started <i class="ti ti-arrow-right"></i></button>
+    </div>
+  </div>
+
+  <div class="onb-step" id="onbStep2">
+    <h1>About you</h1>
+    <p class="sub">A few details to personalize your journey.</p>
+    <div class="field">
+      <label class="label" for="onbName">Your name</label>
+      <input class="input" id="onbName" type="text" placeholder="What should we call you?" />
+    </div>
+    <div class="field">
+      <label class="label" for="onbDate">Surgery date</label>
+      <input class="input" id="onbDate" type="date" />
+    </div>
+    <div class="field">
+      <label class="label" for="onbClear">Doctor clearance status</label>
+      <select class="select" id="onbClear">
+        <option value="0">Not yet cleared (0–6 weeks)</option>
+        <option value="1">6-week clearance received</option>
+        <option value="2">Full clearance received</option>
+      </select>
+    </div>
+    <div class="actions row">
+      <button class="btn btn-secondary" onclick="nextOnbStep(1)"><i class="ti ti-arrow-left"></i></button>
+      <button class="btn btn-primary flex-1 btn-lg" onclick="onboardStep2Continue()">Continue <i class="ti ti-arrow-right"></i></button>
+    </div>
+  </div>
+
+  <div class="onb-step" id="onbStep3">
+    <h1>Your goals</h1>
+    <p class="sub">What matters most to you right now? Pick any.</p>
+    <div class="pill-group" id="onbGoals">
+      <button class="pill" data-goal="strength">Rebuild core strength</button>
+      <button class="pill" data-goal="weightloss">Lose pregnancy weight</button>
+      <button class="pill" data-goal="pain">Reduce pain &amp; discomfort</button>
+      <button class="pill" data-goal="energy">Improve energy levels</button>
+      <button class="pill" data-goal="wellness">General wellness</button>
+      <button class="pill" data-goal="fitness">Return to fitness/sport</button>
+    </div>
+    <div class="actions row">
+      <button class="btn btn-secondary" onclick="nextOnbStep(2)"><i class="ti ti-arrow-left"></i></button>
+      <button class="btn btn-primary flex-1 btn-lg" onclick="finishOnboarding()">Start My Journey <i class="ti ti-arrow-right"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- App Container -->
+<div class="app-container" id="app" style="display:none;">
+
+  <!-- Desktop Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon"><i class="ti ti-heart-handshake"></i></div>
+      <div class="sidebar-brand-text">CS Recovery<small>Your gentle guide</small></div>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item active" data-screen="screen-home" onclick="navigate('screen-home')"><i class="ti ti-home"></i><span>Home</span></a>
+      <a class="nav-item" data-screen="screen-exercises" onclick="navigate('screen-exercises')"><i class="ti ti-run"></i><span>Exercises</span></a>
+      <a class="nav-item" data-screen="screen-workout" onclick="navigate('screen-workout')"><i class="ti ti-player-play"></i><span>Workout</span></a>
+      <a class="nav-item" data-screen="screen-progress" onclick="navigate('screen-progress')"><i class="ti ti-chart-line"></i><span>Progress</span></a>
+      <a class="nav-item" data-screen="screen-journal" onclick="navigate('screen-journal')"><i class="ti ti-notebook"></i><span>Journal</span></a>
+      <a class="nav-item" data-screen="screen-learn" onclick="navigate('screen-learn')"><i class="ti ti-book"></i><span>Learn</span></a>
+      <a class="nav-item" data-screen="screen-profile" onclick="navigate('screen-profile')"><i class="ti ti-user"></i><span>Profile</span></a>
+    </nav>
+    <div class="sidebar-phase">
+      <div class="sidebar-phase-label">Current Phase</div>
+      <div class="sidebar-phase-name" id="sbPhaseName">Phase 1</div>
+    </div>
+    <div class="sidebar-user">
+      <div class="sidebar-user-avatar" id="sbAvatar">U</div>
+      <div class="sidebar-user-name" id="sbUserName">User</div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+
+    <!-- HOME SCREEN -->
+    <section class="screen active" id="screen-home">
+      <div class="disclaimer-banner" id="homeDisclaimer">
+        <i class="ti ti-info-circle"></i>
+        <span>Always follow your doctor's advice. This app is a guide, not a medical prescription.</span>
+        <button onclick="dismissDisclaimer()" aria-label="Dismiss"><i class="ti ti-x"></i></button>
+      </div>
+
+      <div class="hero-card">
+        <div class="hero-greet" id="heroGreet">Good morning</div>
+        <div class="hero-day" id="heroDay">Day 0 of your recovery</div>
+        <div class="hero-badge" id="heroPhase"><span class="dot"></span><span>Phase 1 · Healing &amp; Rest</span></div>
+        <div class="hero-progress">
+          <div class="hero-progress-track"><div class="hero-progress-fill" id="heroProgress"></div></div>
+          <div class="hero-progress-text" id="heroProgressText">0 / 14 days in this phase</div>
+        </div>
+      </div>
+
+      <div class="workout-card" id="todayWorkout" onclick="openTodayWorkout()">
+        <div class="workout-card-tag">Today's Session</div>
+        <h3 id="twName">Phase 1: Gentle Start</h3>
+        <div class="workout-card-meta">
+          <span><i class="ti ti-clock"></i> <span id="twDur">15 min</span></span>
+          <span class="difficulty" id="twDiff"></span>
+        </div>
+        <button class="btn btn-primary btn-block" id="twBtn">Start Workout <i class="ti ti-arrow-right"></i></button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="stWeek">0</div>
+          <div class="stat-label">This Week</div>
+        </div>
+        <div class="stat-card streak">
+          <div class="stat-value" id="stStreak">0</div>
+          <div class="stat-label"><i class="ti ti-flame"></i> Streak</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stMin">0</div>
+          <div class="stat-label">Minutes</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="row mb-1"><i class="ti ti-checkup-list" style="color:var(--color-primary-dark)"></i><strong>Today's checklist</strong></div>
+        <ul class="checklist" id="checklist">
+          <li data-key="vitamins"><span class="checkbox"><i class="ti ti-check"></i></span><span>Took prenatal vitamins</span></li>
+          <li data-key="water"><span class="checkbox"><i class="ti ti-check"></i></span><span>Drank 8 glasses of water</span></li>
+          <li data-key="wound"><span class="checkbox"><i class="ti ti-check"></i></span><span>Wound check done</span></li>
+          <li data-key="walk"><span class="checkbox"><i class="ti ti-check"></i></span><span>Gentle walk completed</span></li>
+        </ul>
+      </div>
+
+      <div class="section-header"><div class="section-title">Phase progress</div></div>
+      <div class="card">
+        <div class="phase-stepper" id="phaseStepper"></div>
+      </div>
+
+      <div class="section-header"><div class="section-title">Upcoming milestones</div></div>
+      <div id="milestones"></div>
+    </section>
+
+    <!-- EXERCISES SCREEN -->
+    <section class="screen" id="screen-exercises">
+      <div class="screen-header">
+        <div>
+          <div class="screen-title">Exercises</div>
+          <div class="screen-subtitle">Phase-safe movements for every stage</div>
+        </div>
+      </div>
+      <div class="search-box">
+        <i class="ti ti-search"></i>
+        <input class="input" type="text" id="exSearch" placeholder="Search exercises..." />
+      </div>
+      <div class="tabs" id="exTabs">
+        <button class="tab active" data-cat="all">All</button>
+        <button class="tab" data-cat="Breathing">Breathing</button>
+        <button class="tab" data-cat="Pelvic Floor">Pelvic Floor</button>
+        <button class="tab" data-cat="Mobility">Mobility</button>
+        <button class="tab" data-cat="Core">Core</button>
+        <button class="tab" data-cat="Lower Body">Lower Body</button>
+        <button class="tab" data-cat="Full Body">Full Body</button>
+      </div>
+      <div class="exercise-grid" id="exerciseGrid"></div>
+    </section>
+
+    <!-- WORKOUT SCREEN -->
+    <section class="screen" id="screen-workout">
+      <div class="screen-header">
+        <div>
+          <div class="screen-title">Workouts</div>
+          <div class="screen-subtitle">Phase-tailored sessions, 15–30 min</div>
+        </div>
+      </div>
+      <div id="workoutList"></div>
+    </section>
+
+    <!-- PROGRESS SCREEN -->
+    <section class="screen" id="screen-progress">
+      <div class="screen-header">
+        <div>
+          <div class="screen-title">Progress</div>
+          <div class="screen-subtitle">Look back at how far you've come</div>
+        </div>
+      </div>
+
+      <div class="card mb-2">
+        <div class="row" style="justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <div class="text-sm text-secondary">This Week</div>
+            <div style="font-family: var(--font-heading); font-size: 28px; font-weight: 600;"><span id="progWeekDone">0</span> / 5 workouts</div>
+          </div>
+          <div class="text-center">
+            <div style="font-family: var(--font-heading); font-size: 32px; font-weight: 600; color: var(--color-primary-dark);"><i class="ti ti-flame"></i> <span id="progStreak">0</span></div>
+            <div class="text-sm text-muted">Day Streak</div>
+          </div>
+          <div class="text-center">
+            <div style="font-family: var(--font-heading); font-size: 22px; font-weight: 600;"><span id="progBest">0</span></div>
+            <div class="text-sm text-muted">Best Week</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-2">
+        <div class="row mb-1"><strong>Workout frequency</strong><span class="text-sm text-muted">Last 8 weeks</span></div>
+        <div style="position: relative; height: 200px;"><canvas id="freqChart"></canvas></div>
+      </div>
+
+      <div class="card mb-2">
+        <div class="row mb-1"><strong>Pain level</strong><span class="text-sm text-muted">Last 30 days</span></div>
+        <div style="position: relative; height: 180px;"><canvas id="painChart"></canvas></div>
+      </div>
+
+      <div class="card mb-2">
+        <div class="row mb-1"><strong>Energy level</strong><span class="text-sm text-muted">Last 30 days</span></div>
+        <div style="position: relative; height: 180px;"><canvas id="energyChart"></canvas></div>
+      </div>
+
+      <div class="section-header"><div class="section-title">Milestone badges</div></div>
+      <div class="badges-grid" id="badgesGrid"></div>
+
+      <div class="section-header">
+        <div class="section-title">Body measurements</div>
+        <button class="section-link" onclick="openMeasurementForm()">+ Add entry</button>
+      </div>
+      <div class="card" id="measurementsCard"></div>
+    </section>
+
+    <!-- JOURNAL SCREEN -->
+    <section class="screen" id="screen-journal">
+      <div class="screen-header">
+        <div>
+          <div class="screen-title">Journal</div>
+          <div class="screen-subtitle">Track how you're feeling, day by day</div>
+        </div>
+      </div>
+
+      <div class="calendar mb-2">
+        <div class="cal-head">
+          <button class="btn btn-icon btn-secondary" onclick="calNav(-1)"><i class="ti ti-chevron-left"></i></button>
+          <div class="cal-month" id="calMonth"></div>
+          <button class="btn btn-icon btn-secondary" onclick="calNav(1)"><i class="ti ti-chevron-right"></i></button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+
+      <div class="card mb-2" id="todayEntryCard"></div>
+
+      <div class="section-header"><div class="section-title">Recent entries</div></div>
+      <div class="card" id="recentEntries"></div>
+    </section>
+
+    <!-- LEARN SCREEN -->
+    <section class="screen" id="screen-learn">
+      <div class="screen-header">
+        <div>
+          <div class="screen-title">Learn</div>
+          <div class="screen-subtitle">Understand your recovery, step by step</div>
+        </div>
+      </div>
+
+      <div class="section-header"><div class="section-title">Understanding your recovery</div></div>
+      <div id="learnAccordion"></div>
+
+      <div class="section-header"><div class="section-title">Red flags — contact your doctor</div></div>
+      <div class="warning-box danger">
+        <strong><i class="ti ti-alert-triangle"></i> Call your provider immediately if you experience:</strong>
+        <ul style="margin-top:8px; padding-left: 20px; line-height: 1.7;">
+          <li>Fever above 38°C / 100.4°F</li>
+          <li>Increasing redness, swelling, or warmth around incision</li>
+          <li>Foul-smelling discharge from incision</li>
+          <li>Heavy bleeding (soaking more than 1 pad per hour)</li>
+          <li>Severe abdominal pain not relieved by medication</li>
+          <li>Signs of blood clot: calf pain, swelling, warmth in leg</li>
+          <li>Feeling unable to cope, persistent low mood</li>
+        </ul>
+      </div>
+
+      <div class="section-header"><div class="section-title">Nutrition for recovery</div></div>
+      <div class="card">
+        <p class="text-sm mb-1"><strong>Protein:</strong> Aim for 1.2–1.5g per kg of body weight to support tissue repair.</p>
+        <p class="text-sm mb-1"><strong>Key nutrients:</strong> Vitamin C (wound healing), Iron (blood loss recovery), Calcium, Omega-3s.</p>
+        <p class="text-sm"><strong>Hydration:</strong> 2–3L water per day, more if breastfeeding.</p>
+      </div>
+
+      <div class="section-header"><div class="section-title">Breastfeeding &amp; exercise</div></div>
+      <div class="card">
+        <p class="text-sm mb-1">It is safe to exercise while breastfeeding. A few tips:</p>
+        <ul class="text-sm text-secondary" style="padding-left: 20px; line-height: 1.7;">
+          <li>Feed or pump just before exercise for comfort</li>
+          <li>Stay well hydrated — milk is mostly water</li>
+          <li>Wear a supportive sports bra (not too compressive)</li>
+          <li>Moderate exercise does not affect milk supply or taste</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- PROFILE SCREEN -->
+    <section class="screen" id="screen-profile">
+      <div class="screen-header">
+        <div>
+          <div class="screen-title">Profile</div>
+          <div class="screen-subtitle">Your details &amp; settings</div>
+        </div>
+      </div>
+
+      <div class="card mb-2">
+        <div class="row" style="gap: 1rem;">
+          <div class="profile-avatar" id="profAvatar">U</div>
+          <div class="flex-1">
+            <div class="row" style="justify-content: space-between;">
+              <div><strong id="profName">User</strong><div class="text-sm text-secondary" id="profDays">Day 0 of recovery</div></div>
+              <button class="btn btn-sm btn-secondary" onclick="openEditProfile()"><i class="ti ti-edit"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-2">
+        <strong>Recovery status</strong>
+        <div class="list-row">
+          <div><div class="label">Current phase</div><div class="sub" id="profPhase">Phase 1</div></div>
+        </div>
+        <div class="field mt-1">
+          <label class="label">Doctor clearance</label>
+          <select class="select" id="profClearance">
+            <option value="0">Not yet cleared (0–6 weeks)</option>
+            <option value="1">6-week clearance received</option>
+            <option value="2">Full clearance received</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card mb-2">
+        <strong>Goals</strong>
+        <div class="pill-group mt-1" id="profGoals">
+          <button class="pill" data-goal="strength">Rebuild core strength</button>
+          <button class="pill" data-goal="weightloss">Lose pregnancy weight</button>
+          <button class="pill" data-goal="pain">Reduce pain &amp; discomfort</button>
+          <button class="pill" data-goal="energy">Improve energy levels</button>
+          <button class="pill" data-goal="wellness">General wellness</button>
+          <button class="pill" data-goal="fitness">Return to fitness/sport</button>
+        </div>
+      </div>
+
+      <div class="card mb-2">
+        <strong>Reminders</strong>
+        <div class="list-row">
+          <div><div class="label">Enable notifications</div><div class="sub">Get gentle nudges</div></div>
+          <div class="toggle" id="togNotif" onclick="toggleNotifications()"></div>
+        </div>
+        <div class="list-row">
+          <div class="flex-1"><div class="label">Workout reminder time</div></div>
+          <input class="input" type="time" id="reminderTime" style="width: 120px;" />
+        </div>
+        <div class="list-row">
+          <div><div class="label">Hydration reminders</div></div>
+          <div class="toggle" id="togHydration" onclick="toggleHydration()"></div>
+        </div>
+        <div class="list-row">
+          <div><div class="label">Daily journal reminder</div></div>
+          <div class="toggle" id="togJournal" onclick="toggleJournalReminder()"></div>
+        </div>
+        <div class="list-row">
+          <div class="flex-1"><div class="label">Next doctor visit</div></div>
+          <input class="input" type="date" id="doctorDate" style="width: 160px;" />
+        </div>
+      </div>
+
+      <div class="card mb-2">
+        <strong>About</strong>
+        <div class="text-sm text-secondary mt-1">Version 1.0.0</div>
+        <div class="warning-box mt-1" style="margin-bottom:0;">This app provides general wellness guidance only. It is not a substitute for professional medical advice. Always follow your doctor's recommendations.</div>
+      </div>
+
+      <button class="btn btn-danger btn-block" onclick="resetApp()"><i class="ti ti-trash"></i> Reset App Data</button>
+
+      <div style="height: 1rem;"></div>
+    </section>
+
+  </main>
+
+  <!-- Bottom Nav -->
+  <nav class="bottom-nav">
+    <a class="nav-item active" data-screen="screen-home" onclick="navigate('screen-home')"><i class="ti ti-home"></i><span>Home</span></a>
+    <a class="nav-item" data-screen="screen-exercises" onclick="navigate('screen-exercises')"><i class="ti ti-run"></i><span>Exercises</span></a>
+    <a class="nav-item" data-screen="screen-workout" onclick="navigate('screen-workout')"><i class="ti ti-player-play"></i><span>Workout</span></a>
+    <a class="nav-item" data-screen="screen-progress" onclick="navigate('screen-progress')"><i class="ti ti-chart-line"></i><span>Progress</span></a>
+    <a class="nav-item" data-screen="screen-journal" onclick="navigate('screen-journal')"><i class="ti ti-notebook"></i><span>Journal</span></a>
+  </nav>
+</div>
+
+<!-- Sheet -->
+<div class="sheet-backdrop" id="sheetBackdrop" onclick="closeSheet()"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-handle"></div>
+  <div id="sheetContent"></div>
+</div>
+
+<!-- Active workout overlay -->
+<div class="workout-active" id="workoutActive">
+  <div class="workout-top">
+    <button class="btn btn-icon btn-secondary" onclick="exitWorkout()"><i class="ti ti-x"></i></button>
+    <div class="text-sm text-secondary" id="waProgressLabel">Exercise 1 / 4</div>
+    <div style="width: 40px;"></div>
+  </div>
+  <div class="workout-progress-track"><div class="workout-progress-fill" id="waProgress"></div></div>
+  <div class="workout-body">
+    <div class="exercise-cat" id="waCat">Breathing</div>
+    <h2 id="waName" style="font-size: 28px;">Exercise</h2>
+    <p class="text-secondary" id="waInstruction" style="max-width: 480px;">Get ready</p>
+    <div class="timer-ring">
+      <svg viewBox="0 0 220 220">
+        <circle class="bg" cx="110" cy="110" r="100"></circle>
+        <circle class="fg" id="waRing" cx="110" cy="110" r="100"></circle>
+      </svg>
+      <div class="timer-text" id="waTimer">0:00</div>
+    </div>
+    <div class="workout-actions">
+      <button class="btn btn-secondary" id="waPause" onclick="togglePause()"><i class="ti ti-player-pause"></i> Pause</button>
+      <button class="btn btn-primary" onclick="nextExercise()">Next <i class="ti ti-arrow-right"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- Install banner -->
+<div class="install-banner" id="installBanner">
+  <i class="ti ti-device-mobile" style="font-size: 24px;"></i>
+  <div class="info"><strong>Install this app</strong><div>Add to Home Screen for the best experience</div></div>
+  <button onclick="doInstall()">Install</button>
+  <button class="dismiss" onclick="dismissInstall()"><i class="ti ti-x"></i></button>
+</div>
+
+<script>
+// ============================================================
+// DATA & STATE
+// ============================================================
+
+const STORAGE_KEY = 'csrp_data';
+
+const PHASE_INFO = {
+  1: { name: "Healing & Rest",    weeks: "Week 1–2",  color: "#E8C97A", daysRange: [0, 14],   minDays: 0,   maxDays: 14 },
+  2: { name: "Gentle Activation", weeks: "Week 3–6",  color: "#8BAF9B", daysRange: [15, 42],  minDays: 15,  maxDays: 42 },
+  3: { name: "Core Reconnection",weeks: "Week 6–12", color: "#E8B4B8", daysRange: [43, 84],  minDays: 43,  maxDays: 84 },
+  4: { name: "Strength Building", weeks: "Month 3–6", color: "#B4C4E8", daysRange: [85, 180], minDays: 85,  maxDays: 180 },
+  5: { name: "Full Return",        weeks: "Month 6+",  color: "#C4B4E8", daysRange: [181, 999],minDays: 181, maxDays: 999 }
+};
+
+const EXERCISES = [
+  { id: 1, name: "Diaphragmatic Breathing", cat: "Breathing", catKey:"breathing", phase: 1, duration: 5, difficulty: 1, why: "Reconnects you with deep core muscles and reduces stress hormones.", steps: ["Lie on your back with knees bent, feet flat.","Place one hand on your belly, one on your chest.","Inhale slowly through your nose, letting your belly rise (not your chest).","Exhale slowly through pursed lips, feeling belly fall.","Repeat 10 times. Do 2–3 rounds."], warning: "Stop if you feel light-headed or dizzy.", reps: "10 breaths × 3 rounds" },
+  { id: 2, name: "Ankle Pumps", cat: "Mobility", catKey:"mobility", phase: 1, duration: 3, difficulty: 1, why: "Boosts circulation in your legs and prevents blood clots.", steps: ["Lie on your back or sit propped up.","Flex your toes toward your face, then point them away.","Move slowly and smoothly through full range.","Do 20 reps each side, every hour while resting."], reps: "20 reps × 2 sets" },
+  { id: 3, name: "Pelvic Floor Awareness", cat: "Pelvic Floor", catKey:"pelvic", phase: 1, duration: 5, difficulty: 1, why: "C-section also stresses the pelvic floor — gentle reconnection helps.", steps: ["Lie comfortably with knees bent.","Imagine softly lifting the muscles you'd use to stop urinating.","Don't squeeze hard — just feel for the muscles.","Release fully and breathe naturally.","Repeat 5 times, focusing on awareness only."], warning: "No strong contractions in the first 2 weeks.", reps: "5 gentle lifts" },
+  { id: 4, name: "Supported Leg Slides", cat: "Mobility", catKey:"mobility", phase: 1, duration: 5, difficulty: 1, why: "Gently introduces movement to hips and abdomen.", steps: ["Lie flat on your back, knees bent.","Slowly slide one heel along the bed, straightening leg.","Slide it back to start position.","Alternate sides smoothly. Don't push through pain."], warning: "Stop if you feel pulling near your incision.", reps: "8 reps each side" },
+  { id: 5, name: "Gentle Neck Rolls", cat: "Mobility", catKey:"mobility", phase: 1, duration: 3, difficulty: 1, why: "Releases tension built up from breastfeeding posture.", steps: ["Sit tall, drop chin to chest.","Slowly roll ear toward shoulder.","Pause, then roll back to center.","Repeat on the other side. Move slowly."], reps: "5 reps each side" },
+  { id: 6, name: "Shoulder Rolls", cat: "Mobility", catKey:"mobility", phase: 1, duration: 3, difficulty: 1, why: "Counteracts hunching from baby holding and feeding.", steps: ["Sit or stand tall.","Roll shoulders up, back, and down in a smooth circle.","Do 10 backward rolls, then 10 forward.","Breathe deeply throughout."], reps: "10 each direction" },
+
+  { id: 7, name: "Pelvic Tilts", cat: "Core", catKey:"core", phase: 2, duration: 8, difficulty: 1, why: "Awakens deep core muscles without strain on incision.", steps: ["Lie on your back, knees bent, feet flat.","Gently flatten your lower back into the floor.","Hold 5 seconds while breathing normally.","Release and repeat."], warning: "Stop if you feel pulling near your incision.", reps: "10 reps × 2 sets" },
+  { id: 8, name: "Gentle Walking", cat: "Full Body", catKey:"full", phase: 2, duration: 15, difficulty: 1, why: "The single best early exercise — boosts mood, circulation, and stamina.", steps: ["Start with 5-minute walks at a comfortable pace.","Increase by 2 minutes every 3 days.","Walk outside if possible — sunlight helps mood.","Stop if you feel pulling or excessive fatigue."], reps: "5–20 min daily" },
+  { id: 9, name: "Seated Posture Work", cat: "Mobility", catKey:"mobility", phase: 2, duration: 5, difficulty: 1, why: "Resets posture and strengthens upper back.", steps: ["Sit tall in a chair, feet flat.","Draw your shoulder blades down and together.","Tuck your chin slightly, lengthen the crown of your head.","Hold 10 seconds. Release.","Repeat 10 times."], reps: "10 reps × 2 sets" },
+  { id: 10, name: "Kegel Exercises", cat: "Pelvic Floor", catKey:"pelvic", phase: 2, duration: 5, difficulty: 2, why: "Strengthens pelvic floor — important post-pregnancy regardless of delivery.", steps: ["Identify pelvic floor muscles (like stopping urine flow).","Contract and lift for 5 seconds.","Fully relax for 5 seconds.","Breathe normally throughout."], reps: "10 reps × 3 sets" },
+  { id: 11, name: "Heel Slides", cat: "Mobility", catKey:"mobility", phase: 2, duration: 5, difficulty: 1, why: "Progresses leg slides with mild core engagement.", steps: ["Lie on back, knees bent.","Gently engage core (think pulling belly button in lightly).","Slide one heel out to straighten leg.","Return slowly. Alternate."], reps: "10 each side × 2 sets" },
+  { id: 12, name: "Calf Raises", cat: "Lower Body", catKey:"lower", phase: 2, duration: 5, difficulty: 1, why: "Builds lower-leg strength without core strain.", steps: ["Stand at a counter or wall for support.","Rise slowly onto the balls of your feet.","Pause at the top, lower with control.","Keep ankles straight."], reps: "15 reps × 2 sets" },
+
+  { id: 13, name: "Glute Bridges", cat: "Lower Body", catKey:"lower", phase: 3, duration: 8, difficulty: 2, why: "Activates posterior chain, supports core recovery indirectly.", steps: ["Lie on back, feet flat, knees bent.","Press through heels and lift hips up.","Squeeze glutes at the top. Hold 3 seconds.","Lower with control."], reps: "12 reps × 3 sets" },
+  { id: 14, name: "Bodyweight Squats", cat: "Lower Body", catKey:"lower", phase: 3, duration: 10, difficulty: 2, why: "Functional movement for daily life — picking up baby, standing, etc.", steps: ["Stand with feet shoulder-width apart.","Sit hips back as if reaching for a chair.","Only go as deep as feels comfortable.","Drive through heels to stand back up."], warning: "Stop if you feel pelvic pressure or pulling.", reps: "10 reps × 3 sets" },
+  { id: 15, name: "Bird Dog", cat: "Core", catKey:"core", phase: 3, duration: 8, difficulty: 2, why: "Builds deep core stability without crunches.", steps: ["On hands and knees, wrists under shoulders.","Extend right arm forward, left leg back.","Hold 5 seconds, keeping hips level.","Return and switch sides."], reps: "8 reps each side × 3 sets" },
+  { id: 16, name: "Side-Lying Clamshells", cat: "Lower Body", catKey:"lower", phase: 3, duration: 8, difficulty: 2, why: "Strengthens glute med — key for hip stability post-pregnancy.", steps: ["Lie on your side, knees bent, hips stacked.","Keep feet together, lift top knee like a clamshell.","Don't roll your hips.","Lower slowly."], reps: "15 reps × 2 sets each side" },
+  { id: 17, name: "Wall Push-Ups", cat: "Full Body", catKey:"full", phase: 3, duration: 8, difficulty: 2, why: "Gently rebuilds upper body strength.", steps: ["Stand arm's length from a wall.","Place palms on wall, slightly wider than shoulders.","Bend elbows to bring chest toward wall.","Push back to start with control."], reps: "12 reps × 3 sets" },
+  { id: 18, name: "Standing Hip Hinge", cat: "Lower Body", catKey:"lower", phase: 3, duration: 8, difficulty: 2, why: "Teaches the foundational pattern for safe bending and lifting.", steps: ["Stand tall, feet hip-width.","Soften knees slightly.","Hinge at hips, pushing them back.","Keep back flat. Return tall by squeezing glutes."], reps: "12 reps × 3 sets" },
+  { id: 19, name: "Cat-Cow Stretch", cat: "Mobility", catKey:"mobility", phase: 3, duration: 5, difficulty: 1, why: "Gentle spinal mobility — feels amazing for back pain.", steps: ["On hands and knees.","Inhale: drop belly, lift chest and tail (cow).","Exhale: round spine, tuck tail and chin (cat).","Move with breath."], reps: "10 cycles" },
+  { id: 20, name: "Seated Core Engagement", cat: "Core", catKey:"core", phase: 3, duration: 5, difficulty: 1, why: "Builds awareness of transverse abdominis (deep core).", steps: ["Sit tall on a chair, feet flat.","Gently draw belly button toward spine.","Hold 10 seconds, breathing normally.","Release fully."], reps: "10 reps × 2 sets" },
+
+  { id: 21, name: "Resistance Band Rows", cat: "Full Body", catKey:"full", phase: 4, duration: 10, difficulty: 2, why: "Rebuilds upper back — critical for parenting posture.", steps: ["Anchor band at chest height.","Hold one end in each hand, step back to tension.","Pull elbows back, squeezing shoulder blades.","Return with control."], reps: "12 reps × 3 sets" },
+  { id: 22, name: "Step-Ups", cat: "Lower Body", catKey:"lower", phase: 4, duration: 10, difficulty: 2, why: "Functional unilateral strength — like climbing stairs with baby.", steps: ["Stand in front of a low step or sturdy box.","Step up with right foot, driving through heel.","Bring left foot up. Step down with control.","Alternate leading leg."], reps: "12 reps each leg × 3 sets" },
+  { id: 23, name: "Modified Plank (on knees)", cat: "Core", catKey:"core", phase: 4, duration: 8, difficulty: 3, why: "Builds deep core endurance — avoid if you have diastasis recti.", steps: ["Start on hands and knees.","Walk hands forward into a plank on knees.","Engage core, keep back flat (no sag).","Hold 20–30 seconds."], warning: "Stop if you see belly doming or feel pulling.", reps: "20–30 sec × 3 sets" },
+  { id: 24, name: "Lateral Band Walks", cat: "Lower Body", catKey:"lower", phase: 4, duration: 8, difficulty: 2, why: "Strengthens hips for stable walking and running form.", steps: ["Place a resistance band above your knees.","Sink into a quarter squat.","Step sideways, keeping tension on band.","Take 15 steps each direction."], reps: "15 steps × 3 rounds" },
+  { id: 25, name: "Single Leg Glute Bridge", cat: "Lower Body", catKey:"lower", phase: 4, duration: 10, difficulty: 3, why: "Progresses bridges, exposes left-right imbalances.", steps: ["Lie on back, one foot flat, other leg extended.","Press through grounded heel to lift hips.","Keep hips level.","Lower with control."], reps: "10 reps each side × 3 sets" },
+  { id: 26, name: "Standing Dumbbell Rows", cat: "Full Body", catKey:"full", phase: 4, duration: 10, difficulty: 2, why: "Builds real-world pulling strength.", steps: ["Hold a light dumbbell in each hand.","Hinge at hips, back flat, weights toward floor.","Pull dumbbells to hips, squeezing back.","Lower with control."], reps: "12 reps × 3 sets" },
+
+  { id: 27, name: "Full Plank", cat: "Core", catKey:"core", phase: 5, duration: 8, difficulty: 3, why: "Full core endurance — only when diastasis is closed.", steps: ["From hands and knees, walk feet back into a plank.","Stack shoulders over wrists.","Squeeze glutes, brace core, keep back flat.","Hold without sagging."], warning: "Stop immediately if you see belly doming.", reps: "20–60 sec × 3–5 sets" },
+  { id: 28, name: "Walking-to-Jogging Intervals", cat: "Full Body", catKey:"full", phase: 5, duration: 20, difficulty: 3, why: "Safe return to impact — only after pelvic floor is strong.", steps: ["Warm up walking 5 minutes.","Walk 4 minutes, jog 1 minute. Repeat 4x.","Cool down walking 5 minutes.","Increase jog intervals weekly if no symptoms."], warning: "Stop if you experience leaking, heaviness, or pain.", reps: "4 intervals" },
+  { id: 29, name: "Romanian Deadlift", cat: "Lower Body", catKey:"lower", phase: 5, duration: 12, difficulty: 3, why: "Builds posterior chain strength for parenting and life.", steps: ["Hold dumbbells in front of thighs.","Soften knees, hinge at hips, push hips back.","Lower weights along legs, keeping back flat.","Drive hips forward to stand."], reps: "12 reps × 4 sets" },
+  { id: 30, name: "HIIT Circuit (Modified)", cat: "Full Body", catKey:"full", phase: 5, duration: 20, difficulty: 3, why: "Returns metabolic challenge — listen to your body.", steps: ["30 sec squats, 30 sec rest","30 sec step-ups, 30 sec rest","30 sec band rows, 30 sec rest","30 sec glute bridges, 30 sec rest","Repeat for 4 rounds."], warning: "Stop if you feel any pelvic pressure or pain.", reps: "4 rounds" }
+];
+
+const WORKOUT_PLANS = [
+  { id: 1, phase: 1, name: "Phase 1: Gentle Start", duration: 16, difficulty: 1, exerciseIds: [1, 2, 3, 5] },
+  { id: 2, phase: 1, name: "Phase 1: Soft Recovery", duration: 18, difficulty: 1, exerciseIds: [1, 4, 6, 3] },
+  { id: 3, phase: 2, name: "Phase 2: Activation Flow", duration: 23, difficulty: 1, exerciseIds: [7, 10, 11, 9] },
+  { id: 4, phase: 2, name: "Phase 2: Foundation Builder", duration: 25, difficulty: 2, exerciseIds: [7, 12, 8, 10] },
+  { id: 5, phase: 3, name: "Phase 3: Core Reconnect", duration: 28, difficulty: 2, exerciseIds: [13, 15, 19, 20] },
+  { id: 6, phase: 3, name: "Phase 3: Full Body Wake-up", duration: 30, difficulty: 2, exerciseIds: [14, 17, 16, 18] },
+  { id: 7, phase: 4, name: "Phase 4: Strength Day", duration: 28, difficulty: 2, exerciseIds: [21, 22, 24, 26] },
+  { id: 8, phase: 4, name: "Phase 4: Core & Stability", duration: 30, difficulty: 3, exerciseIds: [23, 25, 21, 24] },
+  { id: 9, phase: 5, name: "Phase 5: Athletic Return", duration: 28, difficulty: 3, exerciseIds: [27, 29, 26] },
+  { id: 10, phase: 5, name: "Phase 5: Cardio + Strength", duration: 30, difficulty: 3, exerciseIds: [28, 30] }
+];
+
+const BADGES = [
+  { id: "first_steps", name: "First Steps", icon: "ti-shoe", description: "Completed your first workout" },
+  { id: "week_strong", name: "One Week Strong", icon: "ti-flame", description: "7-day streak" },
+  { id: "halfway", name: "Halfway There", icon: "ti-stairs-up", description: "45 days since surgery" },
+  { id: "six_week", name: "6-Week Mark", icon: "ti-calendar-event", description: "Reached Phase 3" },
+  { id: "core_comeback", name: "Core Comeback", icon: "ti-bolt", description: "10+ Phase 3 workouts" },
+  { id: "three_month", name: "3-Month Milestone", icon: "ti-trophy", description: "90 days since surgery" },
+  { id: "full_circle", name: "Full Circle", icon: "ti-circle-check", description: "Completed Phase 5 workout" }
+];
+
+const LEARN_CONTENT = [
+  { title: "What happens to your body after a C-section", body: "Your surgeon cut through several layers — skin, fat, connective tissue, and muscle (often separating, not cutting through, the abs) — to safely deliver your baby. Skin generally heals in 1–2 weeks, but deeper layers take 6–12 weeks. Full internal healing — including scar tissue maturity — takes up to a year. This is why patience and progression matter so much." },
+  { title: "Your scar — what's normal, what's not", body: "Normal: redness for several weeks that gradually fades, mild itching, numbness around the scar, small bumps along the line. Not normal: increasing redness, warmth or swelling, pus or foul discharge, sharp pain that worsens, or fever. Call your provider if any of these appear." },
+  { title: "Diastasis Recti — the ab separation you need to know about", body: "Most pregnancies cause the two halves of your rectus abdominis to separate. To self-check: lie on your back, knees bent, head slightly lifted. Press fingers above your navel — a gap of 2+ fingers is significant. Avoid traditional crunches, sit-ups, and full planks until the gap closes through deep core work (Phase 2–3 exercises in this app)." },
+  { title: "Pelvic floor after C-section — yes, it still matters", body: "Pregnancy itself (regardless of delivery method) stresses the pelvic floor for 9 months. You may experience leaking, heaviness, or weakness even after a C-section. Kegels and pelvic floor awareness are essential. If symptoms persist past 8 weeks, see a pelvic floor physiotherapist." },
+  { title: "When can I return to running?", body: "Most experts recommend waiting at least 12 weeks (3 months) post-C-section before running, and only if: 1) cleared by your provider, 2) you have no symptoms (leaking, heaviness, pain), 3) you have built up walking and strength foundations first. Then progress gradually — walk/jog intervals before continuous running." }
+];
+
+// ============================================================
+// STATE MANAGEMENT
+// ============================================================
+
+function getDefaultState() {
+  return {
+    onboardingComplete: false,
+    surgeryDate: null,
+    clearanceLevel: 0,
+    userName: "",
+    goals: [],
+    workoutLog: [],
+    journalEntries: [],
+    measurements: [],
+    reminderSettings: { workoutTime: "09:00", hydrationEnabled: true, journalEnabled: false, notificationsGranted: false, doctorDate: "" },
+    currentPhase: 1,
+    streakCount: 0,
+    lastWorkoutDate: null,
+    dailyChecklist: {},
+    badges: {},
+    dismissedDisclaimer: null,
+    installDismissed: false
+  };
+}
+
+let state = loadState();
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return getDefaultState();
+    return Object.assign(getDefaultState(), JSON.parse(raw));
+  } catch { return getDefaultState(); }
+}
+
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+
+function todayISO() { return new Date().toISOString().slice(0, 10); }
+
+function daysBetween(a, b) {
+  const da = new Date(a); da.setHours(0,0,0,0);
+  const db = new Date(b); db.setHours(0,0,0,0);
+  return Math.floor((db - da) / 86400000);
+}
+
+function daysSinceSurgery() {
+  if (!state.surgeryDate) return 0;
+  return Math.max(0, daysBetween(state.surgeryDate, todayISO()));
+}
+
+function calculatePhase(surgeryDateStr) {
+  if (!surgeryDateStr) return 1;
+  const days = daysBetween(surgeryDateStr, todayISO());
+  if (days <= 14) return 1;
+  if (days <= 42) return 2;
+  if (days <= 84) return 3;
+  if (days <= 180) return 4;
+  return 5;
+}
+
+function fmtGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  return "Good evening";
+}
+
+function getInitials(name) {
+  if (!name) return "U";
+  return name.trim().split(/\s+/).map(w => w[0]).slice(0, 2).join("").toUpperCase();
+}
+
+function fmtDate(iso, opts) {
+  const d = new Date(iso);
+  return d.toLocaleDateString(undefined, opts || { month: 'short', day: 'numeric' });
+}
+
+// ============================================================
+// ONBOARDING
+// ============================================================
+
+let onbGoalSet = new Set();
+
+function showOnboarding() {
+  document.getElementById('onboarding').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  goOnbStep(1);
+  // Default surgery date = today
+  document.getElementById('onbDate').value = todayISO();
+  document.getElementById('onbDate').max = todayISO();
+
+  document.querySelectorAll('#onbGoals .pill').forEach(p => {
+    p.onclick = () => {
+      const g = p.dataset.goal;
+      if (onbGoalSet.has(g)) { onbGoalSet.delete(g); p.classList.remove('active'); }
+      else { onbGoalSet.add(g); p.classList.add('active'); }
+    };
+  });
+}
+
+function goOnbStep(n) {
+  for (let i = 1; i <= 3; i++) {
+    document.getElementById('onbStep' + i).classList.toggle('active', i === n);
+    document.getElementById('onbStep' + i + 'Dot').classList.toggle('active', i <= n);
+  }
+}
+
+function nextOnbStep(n) { goOnbStep(n); }
+
+function onboardStep2Continue() {
+  const name = document.getElementById('onbName').value.trim();
+  const date = document.getElementById('onbDate').value;
+  const clear = parseInt(document.getElementById('onbClear').value);
+  if (!name) { alert('Please enter your name'); return; }
+  if (!date) { alert('Please select your surgery date'); return; }
+  state.userName = name;
+  state.surgeryDate = date;
+  state.clearanceLevel = clear;
+  saveState();
+  goOnbStep(3);
+}
+
+function finishOnboarding() {
+  state.goals = Array.from(onbGoalSet);
+  state.onboardingComplete = true;
+  state.currentPhase = calculatePhase(state.surgeryDate);
+  seedDemoData();
+  saveState();
+  document.getElementById('onboarding').style.display = 'none';
+  document.getElementById('app').style.display = '';
+  initApp();
+}
+
+function seedDemoData() {
+  if (state.workoutLog.length > 0) return;
+  const today = new Date();
+  const phase = state.currentPhase;
+  for (let i = 1; i <= 14; i++) {
+    const d = new Date(today); d.setDate(d.getDate() - i);
+    const iso = d.toISOString().slice(0, 10);
+    if (i % 2 === 0 && state.workoutLog.length < 8) {
+      const plan = WORKOUT_PLANS.find(w => w.phase === Math.max(1, phase - 1)) || WORKOUT_PLANS[0];
+      state.workoutLog.push({ date: iso, workoutId: plan.id, duration: plan.duration, completed: true });
+    }
+    if (i <= 10) {
+      const moods = ['great', 'good', 'okay', 'good', 'great', 'okay', 'good', 'low', 'good', 'great'];
+      state.journalEntries.push({
+        date: iso,
+        mood: moods[(i - 1) % moods.length],
+        pain: Math.max(1, 7 - i + Math.floor(Math.random() * 2)),
+        energy: Math.min(9, 3 + i + Math.floor(Math.random() * 2)),
+        sleep: 6 + Math.random() * 2,
+        woundOk: ['no_red','no_swell','no_disc','normal'],
+        notes: i === 1 ? "Feeling more like myself today." : ""
+      });
+    }
+  }
+  state.measurements.push({ date: new Date(today.getTime() - 14*86400000).toISOString().slice(0,10), weight: 72, waist: 92 });
+  state.measurements.push({ date: new Date(today.getTime() - 7*86400000).toISOString().slice(0,10), weight: 71, waist: 90 });
+  state.badges['first_steps'] = todayISO();
+  if (daysSinceSurgery() >= 7) state.badges['week_strong'] = todayISO();
+  if (daysSinceSurgery() >= 45) state.badges['halfway'] = todayISO();
+  state.streakCount = 3;
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+
+function navigate(screenId) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById(screenId);
+  if (target) target.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('[data-screen="' + screenId + '"]').forEach(n => n.classList.add('active'));
+  window.scrollTo(0, 0);
+  if (screenId === 'screen-progress') renderProgressCharts();
+  if (screenId === 'screen-journal') renderJournal();
+  if (screenId === 'screen-exercises') renderExercises();
+  if (screenId === 'screen-workout') renderWorkoutList();
+  if (screenId === 'screen-home') renderHome();
+  if (screenId === 'screen-learn') renderLearn();
+  if (screenId === 'screen-profile') renderProfile();
+}
+
+// ============================================================
+// HOME
+// ============================================================
+
+function renderHome() {
+  document.getElementById('heroGreet').textContent = fmtGreeting() + ', ' + (state.userName || 'friend');
+  const days = daysSinceSurgery();
+  document.getElementById('heroDay').textContent = 'Day ' + days + ' of your recovery';
+  const phase = calculatePhase(state.surgeryDate);
+  state.currentPhase = phase;
+  const info = PHASE_INFO[phase];
+  document.getElementById('heroPhase').innerHTML = '<span class="dot"></span><span>Phase ' + phase + ' · ' + info.name + '</span>';
+
+  const phaseDay = Math.max(0, days - info.minDays);
+  const phaseTotal = phase === 5 ? 30 : (info.maxDays - info.minDays + 1);
+  const phasePct = Math.min(100, Math.round((phaseDay / phaseTotal) * 100));
+  setTimeout(() => { document.getElementById('heroProgress').style.width = phasePct + '%'; }, 100);
+  document.getElementById('heroProgressText').textContent = phase === 5 ? 'You\'ve reached the final phase' : (phaseDay + ' / ' + phaseTotal + ' days in this phase');
+
+  // Today's workout
+  const todayPlan = WORKOUT_PLANS.find(w => w.phase === phase) || WORKOUT_PLANS[0];
+  document.getElementById('twName').textContent = todayPlan.name;
+  document.getElementById('twDur').textContent = todayPlan.duration + ' min';
+  document.getElementById('twDiff').innerHTML = makeDifficultyDots(todayPlan.difficulty);
+  const doneToday = state.workoutLog.some(w => w.date === todayISO() && w.completed);
+  const card = document.getElementById('todayWorkout');
+  const btn = document.getElementById('twBtn');
+  if (doneToday) {
+    card.classList.add('completed');
+    btn.innerHTML = '<i class="ti ti-check"></i> Completed';
+    btn.className = 'btn btn-success btn-block';
+  } else {
+    card.classList.remove('completed');
+    btn.innerHTML = 'Start Workout <i class="ti ti-arrow-right"></i>';
+    btn.className = 'btn btn-primary btn-block';
+  }
+  card.dataset.workoutId = todayPlan.id;
+
+  // Stats
+  document.getElementById('stWeek').textContent = workoutsThisWeek();
+  document.getElementById('stStreak').textContent = computeStreak();
+  document.getElementById('stMin').textContent = minutesThisWeek();
+
+  // Checklist
+  const dayKey = todayISO();
+  const todayChecks = state.dailyChecklist[dayKey] || {};
+  document.querySelectorAll('#checklist li').forEach(li => {
+    const k = li.dataset.key;
+    li.classList.toggle('checked', !!todayChecks[k]);
+    li.onclick = () => {
+      todayChecks[k] = !todayChecks[k];
+      state.dailyChecklist[dayKey] = todayChecks;
+      saveState();
+      li.classList.toggle('checked', !!todayChecks[k]);
+    };
+  });
+
+  // Phase stepper
+  const stepperEl = document.getElementById('phaseStepper');
+  stepperEl.innerHTML = '';
+  for (let i = 1; i <= 5; i++) {
+    const ps = document.createElement('div');
+    ps.className = 'phase-step';
+    if (i < phase) ps.classList.add('complete');
+    if (i === phase) ps.classList.add('current');
+    ps.innerHTML = '<div class="phase-step-bar"></div><div class="phase-step-label">P' + i + '</div>';
+    ps.onclick = () => openPhaseInfo(i);
+    stepperEl.appendChild(ps);
+  }
+
+  // Milestones
+  const mEl = document.getElementById('milestones');
+  mEl.innerHTML = '';
+  const milestones = [];
+  const day6w = 42 - days;
+  if (day6w > 0 && day6w <= 14) milestones.push({ icon: 'ti-calendar-event', title: '6-week mark in ' + day6w + ' days', sub: 'Doctor clearance check reminder' });
+  if (phase < 5) {
+    const daysToNext = PHASE_INFO[phase].maxDays - days + 1;
+    if (daysToNext > 0) milestones.push({ icon: 'ti-stairs-up', title: 'Phase ' + (phase + 1) + ' unlocks in ' + daysToNext + ' days', sub: 'Keep showing up gently' });
+  }
+  const day90 = 90 - days;
+  if (day90 > 0 && day90 <= 14) milestones.push({ icon: 'ti-trophy', title: '3-month milestone in ' + day90 + ' days', sub: 'A big recovery marker' });
+  if (milestones.length === 0) milestones.push({ icon: 'ti-heart', title: 'You are doing beautifully', sub: 'Keep listening to your body' });
+  milestones.forEach(m => {
+    const el = document.createElement('div');
+    el.className = 'milestone-card';
+    el.innerHTML = '<i class="ti ' + m.icon + '"></i><div class="milestone-card-body"><div class="milestone-card-title">' + m.title + '</div><div class="milestone-card-sub">' + m.sub + '</div></div>';
+    mEl.appendChild(el);
+  });
+
+  // Disclaimer banner: dismissed within last 7 days?
+  const banner = document.getElementById('homeDisclaimer');
+  if (state.dismissedDisclaimer && daysBetween(state.dismissedDisclaimer, todayISO()) < 7) {
+    banner.style.display = 'none';
+  } else {
+    banner.style.display = 'flex';
+  }
+}
+
+function dismissDisclaimer() {
+  state.dismissedDisclaimer = todayISO();
+  saveState();
+  document.getElementById('homeDisclaimer').style.display = 'none';
+}
+
+function openTodayWorkout() {
+  const id = parseInt(document.getElementById('todayWorkout').dataset.workoutId);
+  startWorkout(id);
+}
+
+function makeDifficultyDots(level) {
+  let s = '';
+  for (let i = 1; i <= 3; i++) s += '<span class="dot' + (i <= level ? ' on' : '') + '"></span>';
+  return s;
+}
+
+function workoutsThisWeek() {
+  const start = new Date(); start.setDate(start.getDate() - start.getDay()); start.setHours(0,0,0,0);
+  return state.workoutLog.filter(w => w.completed && new Date(w.date) >= start).length;
+}
+
+function minutesThisWeek() {
+  const start = new Date(); start.setDate(start.getDate() - start.getDay()); start.setHours(0,0,0,0);
+  return state.workoutLog.filter(w => w.completed && new Date(w.date) >= start).reduce((s, w) => s + (w.duration || 0), 0);
+}
+
+function computeStreak() {
+  const dates = new Set(state.workoutLog.filter(w => w.completed).map(w => w.date));
+  let streak = 0;
+  let d = new Date();
+  while (true) {
+    const iso = d.toISOString().slice(0, 10);
+    if (dates.has(iso)) { streak++; d.setDate(d.getDate() - 1); }
+    else if (streak === 0 && iso === todayISO()) { d.setDate(d.getDate() - 1); }
+    else break;
+    if (streak > 365) break;
+  }
+  state.streakCount = streak;
+  return streak;
+}
+
+function openPhaseInfo(phase) {
+  const p = PHASE_INFO[phase];
+  const descs = {
+    1: "Focus on rest, breathing, and gentle circulation. Your body has just done extraordinary work — let it heal.",
+    2: "Begin gentle activation: pelvic tilts, kegels, posture work, longer walks. Listen carefully to your body.",
+    3: "Reconnect your deep core with bird dogs, bridges, and squats. Most people get doctor clearance during this phase.",
+    4: "Build real strength with resistance work, full body movements, and longer sessions. Confidence returns.",
+    5: "Full return to fitness. Running, HIIT, and heavier lifting — all on a foundation of healed and strong core."
+  };
+  showSheet(`
+    <div class="exercise-cat" style="background: ` + p.color + `30; color: ` + p.color + `">Phase ${phase}</div>
+    <h2 class="sheet-title" style="margin-top:6px;">${p.name}</h2>
+    <p class="text-secondary mb-2">${p.weeks}</p>
+    <p class="text-sm">${descs[phase]}</p>
+  `);
+}
+
+// ============================================================
+// EXERCISES
+// ============================================================
+
+let exFilter = { cat: 'all', q: '' };
+
+function renderExercises() {
+  document.querySelectorAll('#exTabs .tab').forEach(t => {
+    t.onclick = () => {
+      document.querySelectorAll('#exTabs .tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      exFilter.cat = t.dataset.cat;
+      renderExerciseGrid();
+    };
+  });
+  document.getElementById('exSearch').oninput = e => { exFilter.q = e.target.value.toLowerCase(); renderExerciseGrid(); };
+  renderExerciseGrid();
+}
+
+function renderExerciseGrid() {
+  const grid = document.getElementById('exerciseGrid');
+  const phase = state.currentPhase;
+  const filtered = EXERCISES.filter(e => {
+    if (exFilter.cat !== 'all' && e.cat !== exFilter.cat) return false;
+    if (exFilter.q && !e.name.toLowerCase().includes(exFilter.q)) return false;
+    return true;
+  });
+  grid.innerHTML = filtered.map(e => {
+    const locked = e.phase > phase;
+    return `
+      <div class="exercise-card ${locked ? 'locked' : ''}" onclick="openExerciseDetail(${e.id})">
+        ${locked ? '<div class="lock-overlay"><i class="ti ti-lock"></i></div>' : ''}
+        <span class="exercise-cat ${e.catKey}">${e.cat}</span>
+        <h4>${e.name}</h4>
+        <div class="exercise-meta">
+          <span><i class="ti ti-clock"></i> ${e.duration} min</span>
+          <span class="difficulty">${makeDifficultyDots(e.difficulty)}</span>
+        </div>
+        ${locked ? '<div class="text-sm text-muted mt-1" style="font-size:11px;">Unlocks Phase ' + e.phase + '</div>' : ''}
+      </div>
+    `;
+  }).join('') || '<p class="text-secondary text-center" style="grid-column: 1/-1; padding: 2rem;">No exercises match your search.</p>';
+}
+
+function openExerciseDetail(id) {
+  const e = EXERCISES.find(x => x.id === id);
+  if (!e) return;
+  const locked = e.phase > state.currentPhase;
+  showSheet(`
+    <div class="row mb-1"><span class="exercise-cat ${e.catKey}">${e.cat}</span><span class="text-sm text-muted">Phase ${e.phase}</span></div>
+    <h2 class="sheet-title">${e.name}</h2>
+    <div class="row mb-2" style="gap:18px;">
+      <span class="text-sm text-secondary"><i class="ti ti-clock"></i> ${e.duration} min</span>
+      <span class="text-sm text-secondary">${e.reps}</span>
+      <span class="difficulty">${makeDifficultyDots(e.difficulty)}</span>
+    </div>
+    <p class="text-sm text-secondary mb-2"><strong>Why this helps:</strong> ${e.why}</p>
+    <div><strong>Steps</strong></div>
+    <ol class="steps-list">${e.steps.map(s => '<li>' + s + '</li>').join('')}</ol>
+    ${e.warning ? '<div class="warning-box"><strong><i class="ti ti-alert-triangle"></i> Safety</strong>' + e.warning + '</div>' : ''}
+    <div class="warning-box" style="background:#FDF8F5; border-left-color:var(--color-primary); color: var(--color-text-secondary)">Listen to your body. Stop if you feel pain, pulling, or discomfort near your incision.</div>
+    ${locked ? '<button class="btn btn-secondary btn-block mt-2" disabled>Unlocks in Phase ' + e.phase + '</button>' : '<button class="btn btn-primary btn-block mt-2" onclick="startSingleExercise(' + e.id + ')">Start This Exercise</button>'}
+  `);
+}
+
+function startSingleExercise(id) {
+  closeSheet();
+  activeWorkout = { name: EXERCISES.find(x => x.id === id).name, exerciseIds: [id], current: 0, workoutId: null };
+  beginWorkoutSession();
+}
+
+// ============================================================
+// WORKOUT LIST
+// ============================================================
+
+function renderWorkoutList() {
+  const list = document.getElementById('workoutList');
+  const phase = state.currentPhase;
+  const html = WORKOUT_PLANS.map(w => {
+    const locked = w.phase > phase;
+    return `
+      <div class="workout-card" style="cursor:${locked?'default':'pointer'}; ${locked?'opacity:0.6':''}" ${locked?'':`onclick="startWorkout(${w.id})"`}>
+        <div class="workout-card-tag">Phase ${w.phase}</div>
+        <h3>${w.name}</h3>
+        <div class="workout-card-meta">
+          <span><i class="ti ti-clock"></i> ${w.duration} min</span>
+          <span><i class="ti ti-list"></i> ${w.exerciseIds.length} exercises</span>
+          <span class="difficulty">${makeDifficultyDots(w.difficulty)}</span>
+        </div>
+        <button class="btn ${locked?'btn-secondary':'btn-primary'} btn-block" ${locked?'disabled':''}>${locked?'<i class="ti ti-lock"></i> Unlocks Phase ' + w.phase:'Start Workout <i class="ti ti-arrow-right"></i>'}</button>
+      </div>
+    `;
+  }).join('');
+  list.innerHTML = html;
+}
+
+function startWorkout(id) {
+  const plan = WORKOUT_PLANS.find(w => w.id === id);
+  if (!plan) return;
+  if (plan.phase > state.currentPhase) return;
+  activeWorkout = { name: plan.name, exerciseIds: [...plan.exerciseIds], current: 0, workoutId: plan.id, duration: plan.duration };
+  showSheet(`
+    <h2 class="sheet-title">${plan.name}</h2>
+    <p class="text-sm text-secondary mb-2"><i class="ti ti-clock"></i> ${plan.duration} min · ${plan.exerciseIds.length} exercises</p>
+    <div class="warning-box" style="background: var(--color-primary-light); border-left-color: var(--color-primary); color: var(--color-primary-dark);"><strong>Warm-up reminder</strong>Take 2 minutes to breathe deeply and gently move your body before starting.</div>
+    <div class="mb-2"><strong>Exercises</strong></div>
+    <ol class="steps-list">${plan.exerciseIds.map(id => { const e = EXERCISES.find(x => x.id === id); return '<li>' + e.name + ' <span class="text-muted">· ' + e.duration + ' min</span></li>'; }).join('')}</ol>
+    <button class="btn btn-primary btn-block btn-lg mt-2" onclick="beginWorkoutSession()">Begin Session <i class="ti ti-player-play"></i></button>
+  `);
+}
+
+// ============================================================
+// ACTIVE WORKOUT SESSION
+// ============================================================
+
+let activeWorkout = null;
+let timerInterval = null;
+let timerRemaining = 0;
+let timerTotal = 0;
+let isPaused = false;
+let isResting = false;
+
+function beginWorkoutSession() {
+  closeSheet();
+  document.getElementById('workoutActive').classList.add('active');
+  activeWorkout.current = 0;
+  showCurrentExercise();
+}
+
+function showCurrentExercise() {
+  isResting = false;
+  const idx = activeWorkout.current;
+  if (idx >= activeWorkout.exerciseIds.length) { completeWorkout(); return; }
+  const exId = activeWorkout.exerciseIds[idx];
+  const ex = EXERCISES.find(x => x.id === exId);
+  document.getElementById('waCat').textContent = ex.cat;
+  document.getElementById('waCat').className = 'exercise-cat ' + ex.catKey;
+  document.getElementById('waName').textContent = ex.name;
+  document.getElementById('waInstruction').textContent = ex.steps[0];
+  document.getElementById('waProgressLabel').textContent = 'Exercise ' + (idx + 1) + ' / ' + activeWorkout.exerciseIds.length;
+  document.getElementById('waProgress').style.width = (((idx) / activeWorkout.exerciseIds.length) * 100) + '%';
+  startTimer(ex.duration * 60);
+}
+
+function showRest() {
+  isResting = true;
+  document.getElementById('waCat').textContent = 'Rest';
+  document.getElementById('waCat').className = 'exercise-cat';
+  document.getElementById('waName').textContent = 'Rest';
+  document.getElementById('waInstruction').textContent = 'Take a breath. The next exercise starts soon.';
+  startTimer(30);
+}
+
+function startTimer(seconds) {
+  clearInterval(timerInterval);
+  timerRemaining = seconds;
+  timerTotal = seconds;
+  isPaused = false;
+  document.getElementById('waPause').innerHTML = '<i class="ti ti-player-pause"></i> Pause';
+  updateTimerUI();
+  timerInterval = setInterval(() => {
+    if (isPaused) return;
+    timerRemaining--;
+    updateTimerUI();
+    if (timerRemaining <= 0) {
+      clearInterval(timerInterval);
+      if (isResting) showCurrentExercise();
+      else nextExercise();
+    }
+  }, 1000);
+}
+
+function updateTimerUI() {
+  const m = Math.floor(timerRemaining / 60);
+  const s = timerRemaining % 60;
+  document.getElementById('waTimer').textContent = m + ':' + String(s).padStart(2, '0');
+  const pct = timerRemaining / timerTotal;
+  const c = 2 * Math.PI * 100;
+  document.getElementById('waRing').style.strokeDasharray = c;
+  document.getElementById('waRing').style.strokeDashoffset = c * (1 - pct);
+}
+
+function togglePause() {
+  isPaused = !isPaused;
+  document.getElementById('waPause').innerHTML = isPaused ? '<i class="ti ti-player-play"></i> Resume' : '<i class="ti ti-player-pause"></i> Pause';
+}
+
+function nextExercise() {
+  clearInterval(timerInterval);
+  if (isResting) { showCurrentExercise(); return; }
+  activeWorkout.current++;
+  if (activeWorkout.current >= activeWorkout.exerciseIds.length) {
+    completeWorkout();
+    return;
+  }
+  showRest();
+}
+
+function exitWorkout() {
+  if (!confirm('End this workout? Progress will not be saved.')) return;
+  clearInterval(timerInterval);
+  document.getElementById('workoutActive').classList.remove('active');
+}
+
+function completeWorkout() {
+  clearInterval(timerInterval);
+  if (activeWorkout.workoutId) {
+    const existingIdx = state.workoutLog.findIndex(w => w.date === todayISO() && w.workoutId === activeWorkout.workoutId);
+    if (existingIdx < 0) {
+      state.workoutLog.push({ date: todayISO(), workoutId: activeWorkout.workoutId, duration: activeWorkout.duration || 20, completed: true });
+    }
+    state.lastWorkoutDate = todayISO();
+    if (!state.badges['first_steps']) state.badges['first_steps'] = todayISO();
+    saveState();
+    checkBadges();
+  }
+  document.getElementById('waCat').textContent = '';
+  document.getElementById('waName').textContent = 'Workout Complete! 🎉';
+  document.getElementById('waInstruction').textContent = 'How do you feel?';
+  document.getElementById('waTimer').textContent = '';
+  document.querySelector('.timer-ring').innerHTML = `
+    <div style="display:flex; justify-content:center; gap:8px; padding:30px;">
+      ${[['😩','rough'],['😕','low'],['😐','okay'],['🙂','good'],['💪','great']].map(([emo, key]) => `
+        <button class="mood-btn" style="flex:0 0 56px;" onclick="rateWorkout('${key}')">${emo}</button>
+      `).join('')}
+    </div>
+  `;
+  document.querySelector('.workout-actions').innerHTML = '<button class="btn btn-primary btn-block btn-lg" onclick="finishWorkoutComplete()">Log &amp; Return Home</button>';
+  document.getElementById('waProgress').style.width = '100%';
+  triggerConfetti();
+}
+
+let lastWorkoutMood = null;
+function rateWorkout(mood) {
+  lastWorkoutMood = mood;
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+}
+
+function finishWorkoutComplete() {
+  document.getElementById('workoutActive').classList.remove('active');
+  // Restore the timer ring DOM
+  document.querySelector('.timer-ring').innerHTML = `
+    <svg viewBox="0 0 220 220">
+      <circle class="bg" cx="110" cy="110" r="100"></circle>
+      <circle class="fg" id="waRing" cx="110" cy="110" r="100"></circle>
+    </svg>
+    <div class="timer-text" id="waTimer">0:00</div>
+  `;
+  document.querySelector('.workout-actions').innerHTML = `
+    <button class="btn btn-secondary" id="waPause" onclick="togglePause()"><i class="ti ti-player-pause"></i> Pause</button>
+    <button class="btn btn-primary" onclick="nextExercise()">Next <i class="ti ti-arrow-right"></i></button>
+  `;
+  navigate('screen-home');
+}
+
+function triggerConfetti() {
+  const colors = ['#E8B4B8', '#C47A7D', '#8BAF9B', '#E8C97A', '#B4C4E8', '#C4B4E8'];
+  const wrap = document.createElement('div');
+  wrap.className = 'confetti';
+  for (let i = 0; i < 40; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+    p.style.animationDelay = (Math.random() * 0.5) + 's';
+    p.style.animationDuration = (1.5 + Math.random() * 1.5) + 's';
+    wrap.appendChild(p);
+  }
+  document.body.appendChild(wrap);
+  setTimeout(() => wrap.remove(), 3500);
+}
+
+// ============================================================
+// PROGRESS
+// ============================================================
+
+let freqChart, painChart, energyChart;
+
+function renderProgressCharts() {
+  document.getElementById('progWeekDone').textContent = workoutsThisWeek();
+  document.getElementById('progStreak').textContent = computeStreak();
+  document.getElementById('progBest').textContent = computeBestWeek();
+
+  // Frequency
+  const weeks = [];
+  const counts = [];
+  for (let i = 7; i >= 0; i--) {
+    const start = new Date(); start.setDate(start.getDate() - start.getDay() - i * 7); start.setHours(0,0,0,0);
+    const end = new Date(start); end.setDate(end.getDate() + 7);
+    weeks.push(start.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }));
+    counts.push(state.workoutLog.filter(w => { const d = new Date(w.date); return w.completed && d >= start && d < end; }).length);
+  }
+  drawChart('freqChart', () => freqChart = new Chart(document.getElementById('freqChart'), {
+    type: 'bar',
+    data: { labels: weeks, datasets: [{ label: 'Workouts', data: counts, backgroundColor: '#E8B4B8', borderRadius: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1, color: '#B5A09A' }, grid: { color: '#F5EDE8' } }, x: { ticks: { color: '#B5A09A' }, grid: { display: false } } } }
+  }), freqChart);
+
+  // Pain & Energy: last 30 days
+  const labels = [];
+  const painData = [];
+  const energyData = [];
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const iso = d.toISOString().slice(0, 10);
+    labels.push(d.getDate());
+    const entry = state.journalEntries.find(e => e.date === iso);
+    painData.push(entry ? entry.pain : null);
+    energyData.push(entry ? entry.energy : null);
+  }
+  drawChart('painChart', () => painChart = new Chart(document.getElementById('painChart'), {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Pain', data: painData, borderColor: '#E07070', backgroundColor: 'rgba(224,112,112,0.15)', fill: true, tension: 0.3, spanGaps: true, pointBackgroundColor: '#E07070', pointRadius: 3 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 10, ticks: { color: '#B5A09A' }, grid: { color: '#F5EDE8' } }, x: { ticks: { color: '#B5A09A', maxTicksLimit: 8 }, grid: { display: false } } } }
+  }), painChart);
+
+  drawChart('energyChart', () => energyChart = new Chart(document.getElementById('energyChart'), {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Energy', data: energyData, borderColor: '#8BAF9B', backgroundColor: 'rgba(139,175,155,0.15)', fill: true, tension: 0.3, spanGaps: true, pointBackgroundColor: '#8BAF9B', pointRadius: 3 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 10, ticks: { color: '#B5A09A' }, grid: { color: '#F5EDE8' } }, x: { ticks: { color: '#B5A09A', maxTicksLimit: 8 }, grid: { display: false } } } }
+  }), energyChart);
+
+  renderBadges();
+  renderMeasurements();
+}
+
+function drawChart(id, builder, existing) {
+  if (existing) try { existing.destroy(); } catch (e) {}
+  builder();
+}
+
+function computeBestWeek() {
+  const map = {};
+  state.workoutLog.forEach(w => {
+    if (!w.completed) return;
+    const d = new Date(w.date);
+    const ws = new Date(d); ws.setDate(d.getDate() - d.getDay());
+    const k = ws.toISOString().slice(0, 10);
+    map[k] = (map[k] || 0) + 1;
+  });
+  return Math.max(0, ...Object.values(map));
+}
+
+function renderBadges() {
+  checkBadges();
+  const el = document.getElementById('badgesGrid');
+  el.innerHTML = BADGES.map(b => {
+    const earned = state.badges[b.id];
+    return `<div class="badge ${earned ? 'earned' : ''}">
+      <div class="badge-icon"><i class="ti ${b.icon}"></i></div>
+      <div class="badge-name">${b.name}</div>
+      ${earned ? '<div class="badge-date">' + fmtDate(earned) + '</div>' : '<div class="badge-date">Locked</div>'}
+    </div>`;
+  }).join('');
+}
+
+function checkBadges() {
+  const days = daysSinceSurgery();
+  if (!state.badges['week_strong'] && computeStreak() >= 7) state.badges['week_strong'] = todayISO();
+  if (!state.badges['halfway'] && days >= 45) state.badges['halfway'] = todayISO();
+  if (!state.badges['six_week'] && state.currentPhase >= 3) state.badges['six_week'] = todayISO();
+  if (!state.badges['core_comeback']) {
+    const p3plus = state.workoutLog.filter(w => { const plan = WORKOUT_PLANS.find(p => p.id === w.workoutId); return plan && plan.phase >= 3 && w.completed; }).length;
+    if (p3plus >= 10) state.badges['core_comeback'] = todayISO();
+  }
+  if (!state.badges['three_month'] && days >= 90) state.badges['three_month'] = todayISO();
+  if (!state.badges['full_circle']) {
+    const hasP5 = state.workoutLog.some(w => { const plan = WORKOUT_PLANS.find(p => p.id === w.workoutId); return plan && plan.phase === 5 && w.completed; });
+    if (hasP5) state.badges['full_circle'] = todayISO();
+  }
+  saveState();
+}
+
+function renderMeasurements() {
+  const el = document.getElementById('measurementsCard');
+  if (!state.measurements.length) {
+    el.innerHTML = '<p class="text-secondary text-sm text-center" style="padding: 1rem 0;">No measurements yet. Tap "Add entry" to start tracking.</p>';
+    return;
+  }
+  el.innerHTML = '<table style="width:100%; border-collapse: collapse; font-size: 14px;">' +
+    '<thead><tr style="text-align:left; color: var(--color-text-muted); font-size: 12px;"><th style="padding: 8px 0;">Date</th><th>Weight</th><th>Waist</th></tr></thead><tbody>' +
+    state.measurements.slice().reverse().map(m => `<tr style="border-top: 1px solid var(--color-surface-2);"><td style="padding: 8px 0;">${fmtDate(m.date)}</td><td>${m.weight ? m.weight + ' kg' : '—'}</td><td>${m.waist ? m.waist + ' cm' : '—'}</td></tr>`).join('') +
+    '</tbody></table>';
+}
+
+function openMeasurementForm() {
+  showSheet(`
+    <h2 class="sheet-title">Add measurement</h2>
+    <div class="field"><label class="label">Date</label><input class="input" type="date" id="mDate" value="${todayISO()}" max="${todayISO()}" /></div>
+    <div class="field"><label class="label">Weight (kg)</label><input class="input" type="number" id="mWeight" placeholder="e.g. 65" step="0.1" /></div>
+    <div class="field"><label class="label">Waist (cm)</label><input class="input" type="number" id="mWaist" placeholder="e.g. 85" step="0.1" /></div>
+    <button class="btn btn-primary btn-block btn-lg" onclick="saveMeasurement()">Save</button>
+  `);
+}
+
+function saveMeasurement() {
+  const date = document.getElementById('mDate').value;
+  const weight = parseFloat(document.getElementById('mWeight').value);
+  const waist = parseFloat(document.getElementById('mWaist').value);
+  if (!date || (isNaN(weight) && isNaN(waist))) { alert('Please enter at least one measurement'); return; }
+  state.measurements.push({ date, weight: isNaN(weight) ? null : weight, waist: isNaN(waist) ? null : waist });
+  state.measurements.sort((a, b) => a.date.localeCompare(b.date));
+  saveState();
+  closeSheet();
+  renderMeasurements();
+}
+
+// ============================================================
+// JOURNAL
+// ============================================================
+
+let calCursor = new Date();
+
+function renderJournal() {
+  renderCalendar();
+  renderTodayEntry();
+  renderRecentEntries();
+}
+
+function renderCalendar() {
+  const year = calCursor.getFullYear();
+  const month = calCursor.getMonth();
+  document.getElementById('calMonth').textContent = calCursor.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+  const first = new Date(year, month, 1);
+  const last = new Date(year, month + 1, 0);
+  const startDay = first.getDay();
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  ['S','M','T','W','T','F','S'].forEach(d => { grid.innerHTML += '<div class="cal-dow">' + d + '</div>'; });
+  for (let i = 0; i < startDay; i++) grid.innerHTML += '<div class="cal-day empty"></div>';
+  for (let d = 1; d <= last.getDate(); d++) {
+    const iso = new Date(year, month, d).toISOString().slice(0, 10);
+    const entry = state.journalEntries.find(e => e.date === iso);
+    const cls = ['cal-day'];
+    if (iso === todayISO()) cls.push('today');
+    if (entry) cls.push('mood-' + entry.mood);
+    grid.innerHTML += '<div class="' + cls.join(' ') + '" onclick="viewOrEditEntry(\'' + iso + '\')">' + d + '</div>';
+  }
+}
+
+function calNav(dir) {
+  calCursor.setMonth(calCursor.getMonth() + dir);
+  renderCalendar();
+}
+
+function renderTodayEntry() {
+  const today = todayISO();
+  const entry = state.journalEntries.find(e => e.date === today);
+  const el = document.getElementById('todayEntryCard');
+  if (!entry) {
+    el.innerHTML = '<div class="row" style="justify-content:space-between;"><div><strong>Today</strong><div class="text-sm text-secondary">No entry yet</div></div><button class="btn btn-primary" onclick="openEntryForm(\'' + today + '\')">Log Today</button></div>';
+  } else {
+    el.innerHTML = `
+      <div class="row" style="justify-content:space-between; align-items: flex-start;">
+        <div class="flex-1">
+          <strong>Today</strong>
+          <div class="text-sm text-secondary mt-1">${moodEmoji(entry.mood)} ${entry.mood} · Pain ${entry.pain}/10 · Energy ${entry.energy}/10</div>
+          ${entry.notes ? '<div class="text-sm mt-1">' + entry.notes + '</div>' : ''}
+        </div>
+        <button class="btn btn-sm btn-secondary" onclick="openEntryForm('${today}')"><i class="ti ti-edit"></i></button>
+      </div>
+    `;
+  }
+}
+
+function viewOrEditEntry(iso) {
+  openEntryForm(iso);
+}
+
+function moodEmoji(m) { return ({rough:'😩',low:'😕',okay:'😐',good:'🙂',great:'💪'})[m] || '🙂'; }
+
+function openEntryForm(iso) {
+  const existing = state.journalEntries.find(e => e.date === iso) || { mood: 'good', pain: 3, energy: 6, sleep: 7, woundOk: [], notes: '' };
+  showSheet(`
+    <h2 class="sheet-title">${iso === todayISO() ? "Today's check-in" : fmtDate(iso, { weekday:'long', month:'long', day:'numeric' })}</h2>
+    <input type="hidden" id="jeDate" value="${iso}" />
+    <div class="field">
+      <label class="label">How's your mood?</label>
+      <div class="mood-row" id="moodRow">
+        ${[['rough','😩'],['low','😕'],['okay','😐'],['good','🙂'],['great','💪']].map(([k,e]) => `<button class="mood-btn ${existing.mood===k?'active':''}" data-mood="${k}">${e}</button>`).join('')}
+      </div>
+    </div>
+    <div class="field">
+      <label class="label">Pain level: <span id="painVal">${existing.pain}</span> / 10</label>
+      <div class="slider-wrap">
+        <input type="range" class="range" id="jePain" min="0" max="10" value="${existing.pain}" oninput="document.getElementById('painVal').textContent=this.value" />
+        <div class="range-row"><span>No pain</span><span>Worst</span></div>
+      </div>
+    </div>
+    <div class="field">
+      <label class="label">Energy level: <span id="energyVal">${existing.energy}</span> / 10</label>
+      <div class="slider-wrap">
+        <input type="range" class="range" id="jeEnergy" min="0" max="10" value="${existing.energy}" oninput="document.getElementById('energyVal').textContent=this.value" />
+        <div class="range-row"><span>Drained</span><span>Energized</span></div>
+      </div>
+    </div>
+    <div class="field">
+      <label class="label">Sleep (hours)</label>
+      <input class="input" type="number" id="jeSleep" min="0" max="12" step="0.5" value="${existing.sleep}" />
+    </div>
+    <div class="field">
+      <label class="label">Wound check</label>
+      <div class="pill-group">
+        ${[['no_red','No redness'],['no_swell','No swelling'],['no_disc','No discharge'],['normal','Scar looks normal']].map(([k,t]) => `<button class="pill ${existing.woundOk && existing.woundOk.includes(k) ? 'active':''}" data-wound="${k}">${t}</button>`).join('')}
+      </div>
+    </div>
+    <div class="field">
+      <label class="label">Notes</label>
+      <textarea class="textarea" id="jeNotes" placeholder="How are you feeling today? Any symptoms to note?">${existing.notes || ''}</textarea>
+    </div>
+    <button class="btn btn-primary btn-block btn-lg" onclick="saveEntry()">Save</button>
+  `);
+  let chosenMood = existing.mood;
+  document.querySelectorAll('#moodRow .mood-btn').forEach(b => {
+    b.onclick = () => {
+      document.querySelectorAll('#moodRow .mood-btn').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      chosenMood = b.dataset.mood;
+    };
+  });
+  document.querySelectorAll('[data-wound]').forEach(p => {
+    p.onclick = () => p.classList.toggle('active');
+  });
+  document.getElementById('moodRow').dataset.chosen = chosenMood;
+}
+
+function saveEntry() {
+  const iso = document.getElementById('jeDate').value;
+  const moodEl = document.querySelector('#moodRow .mood-btn.active');
+  const mood = moodEl ? moodEl.dataset.mood : 'good';
+  const pain = parseInt(document.getElementById('jePain').value);
+  const energy = parseInt(document.getElementById('jeEnergy').value);
+  const sleep = parseFloat(document.getElementById('jeSleep').value);
+  const notes = document.getElementById('jeNotes').value.trim();
+  const woundOk = Array.from(document.querySelectorAll('[data-wound].active')).map(x => x.dataset.wound);
+
+  const existing = state.journalEntries.findIndex(e => e.date === iso);
+  const entry = { date: iso, mood, pain, energy, sleep, woundOk, notes };
+  if (existing >= 0) state.journalEntries[existing] = entry; else state.journalEntries.push(entry);
+  state.journalEntries.sort((a, b) => a.date.localeCompare(b.date));
+  saveState();
+  closeSheet();
+  renderJournal();
+
+  if (pain >= 7) {
+    setTimeout(() => {
+      showSheet('<h2 class="sheet-title">A gentle check-in</h2><p class="text-secondary mb-2">You logged a high pain level today (' + pain + '/10). If this is new or worsening, please consider contacting your healthcare provider.</p><button class="btn btn-primary btn-block" onclick="closeSheet()">I understand</button>');
+    }, 400);
+  }
+}
+
+function renderRecentEntries() {
+  const el = document.getElementById('recentEntries');
+  const recent = state.journalEntries.slice().sort((a,b) => b.date.localeCompare(a.date)).slice(0, 10);
+  if (!recent.length) { el.innerHTML = '<p class="text-secondary text-sm text-center" style="padding: 1rem 0;">No entries yet.</p>'; return; }
+  el.innerHTML = recent.map(e => `
+    <div class="entry-row" onclick="openEntryForm('${e.date}')">
+      <div class="entry-emoji">${moodEmoji(e.mood)}</div>
+      <div class="entry-info">
+        <div class="entry-date">${fmtDate(e.date, { weekday:'short', month:'short', day:'numeric' })}</div>
+        <div class="entry-preview">${e.notes || 'Pain ' + e.pain + ' · Energy ' + e.energy + ' · Sleep ' + e.sleep + 'h'}</div>
+      </div>
+      <div class="entry-pain">P:${e.pain}</div>
+    </div>
+  `).join('');
+}
+
+// ============================================================
+// LEARN
+// ============================================================
+
+function renderLearn() {
+  const el = document.getElementById('learnAccordion');
+  el.innerHTML = LEARN_CONTENT.map((c, i) => `
+    <div class="accordion-item" data-i="${i}">
+      <div class="accordion-head" onclick="toggleAccordion(${i})"><span>${c.title}</span><i class="ti ti-chevron-down"></i></div>
+      <div class="accordion-body">${c.body}</div>
+    </div>
+  `).join('');
+}
+
+function toggleAccordion(i) {
+  document.querySelectorAll('.accordion-item').forEach(it => {
+    if (parseInt(it.dataset.i) === i) it.classList.toggle('open');
+    else it.classList.remove('open');
+  });
+}
+
+// ============================================================
+// PROFILE
+// ============================================================
+
+function renderProfile() {
+  document.getElementById('profName').textContent = state.userName || 'User';
+  document.getElementById('profAvatar').textContent = getInitials(state.userName);
+  document.getElementById('profDays').textContent = 'Day ' + daysSinceSurgery() + ' of recovery';
+  document.getElementById('profPhase').textContent = 'Phase ' + state.currentPhase + ' · ' + PHASE_INFO[state.currentPhase].name;
+  document.getElementById('profClearance').value = state.clearanceLevel;
+  document.getElementById('profClearance').onchange = e => { state.clearanceLevel = parseInt(e.target.value); saveState(); };
+
+  document.querySelectorAll('#profGoals .pill').forEach(p => {
+    const g = p.dataset.goal;
+    p.classList.toggle('active', state.goals.includes(g));
+    p.onclick = () => {
+      const i = state.goals.indexOf(g);
+      if (i >= 0) state.goals.splice(i, 1); else state.goals.push(g);
+      p.classList.toggle('active');
+      saveState();
+    };
+  });
+
+  document.getElementById('togNotif').classList.toggle('on', state.reminderSettings.notificationsGranted);
+  document.getElementById('togHydration').classList.toggle('on', state.reminderSettings.hydrationEnabled);
+  document.getElementById('togJournal').classList.toggle('on', state.reminderSettings.journalEnabled);
+  document.getElementById('reminderTime').value = state.reminderSettings.workoutTime;
+  document.getElementById('reminderTime').onchange = e => { state.reminderSettings.workoutTime = e.target.value; saveState(); };
+  document.getElementById('doctorDate').value = state.reminderSettings.doctorDate || '';
+  document.getElementById('doctorDate').onchange = e => { state.reminderSettings.doctorDate = e.target.value; saveState(); };
+}
+
+function toggleNotifications() {
+  const el = document.getElementById('togNotif');
+  if (!state.reminderSettings.notificationsGranted) {
+    if ('Notification' in window) {
+      Notification.requestPermission().then(p => {
+        state.reminderSettings.notificationsGranted = (p === 'granted');
+        saveState();
+        el.classList.toggle('on', state.reminderSettings.notificationsGranted);
+      });
+    } else {
+      alert('Notifications not supported on this device');
+    }
+  } else {
+    state.reminderSettings.notificationsGranted = false;
+    saveState();
+    el.classList.remove('on');
+  }
+}
+
+function toggleHydration() {
+  state.reminderSettings.hydrationEnabled = !state.reminderSettings.hydrationEnabled;
+  saveState();
+  document.getElementById('togHydration').classList.toggle('on', state.reminderSettings.hydrationEnabled);
+}
+
+function toggleJournalReminder() {
+  state.reminderSettings.journalEnabled = !state.reminderSettings.journalEnabled;
+  saveState();
+  document.getElementById('togJournal').classList.toggle('on', state.reminderSettings.journalEnabled);
+}
+
+function openEditProfile() {
+  showSheet(`
+    <h2 class="sheet-title">Edit profile</h2>
+    <div class="field"><label class="label">Name</label><input class="input" type="text" id="epName" value="${state.userName}" /></div>
+    <div class="field"><label class="label">Surgery date</label><input class="input" type="date" id="epDate" value="${state.surgeryDate}" max="${todayISO()}" /></div>
+    <button class="btn btn-primary btn-block btn-lg" onclick="saveProfile()">Save</button>
+  `);
+}
+
+function saveProfile() {
+  const name = document.getElementById('epName').value.trim();
+  const date = document.getElementById('epDate').value;
+  if (!name || !date) { alert('Please fill in all fields'); return; }
+  state.userName = name;
+  state.surgeryDate = date;
+  state.currentPhase = calculatePhase(date);
+  saveState();
+  closeSheet();
+  renderProfile();
+  updateSidebarUser();
+}
+
+function resetApp() {
+  if (!confirm('This will delete all your data. Are you sure?')) return;
+  if (!confirm('Really delete everything? This cannot be undone.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+}
+
+// ============================================================
+// SHEET
+// ============================================================
+
+function showSheet(html) {
+  document.getElementById('sheetContent').innerHTML = html;
+  document.getElementById('sheet').classList.add('open');
+  document.getElementById('sheetBackdrop').classList.add('open');
+}
+
+function closeSheet() {
+  document.getElementById('sheet').classList.remove('open');
+  document.getElementById('sheetBackdrop').classList.remove('open');
+}
+
+// ============================================================
+// SIDEBAR
+// ============================================================
+
+function updateSidebarUser() {
+  document.getElementById('sbAvatar').textContent = getInitials(state.userName);
+  document.getElementById('sbUserName').textContent = state.userName || 'User';
+  document.getElementById('sbPhaseName').textContent = 'Phase ' + state.currentPhase + ' · ' + PHASE_INFO[state.currentPhase].name;
+}
+
+// ============================================================
+// PWA
+// ============================================================
+
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (!state.installDismissed) {
+    setTimeout(() => {
+      document.getElementById('installBanner').classList.add('visible');
+    }, 30000);
+  }
+});
+
+function doInstall() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(() => {
+    deferredPrompt = null;
+    document.getElementById('installBanner').classList.remove('visible');
+  });
+}
+
+function dismissInstall() {
+  state.installDismissed = true;
+  saveState();
+  document.getElementById('installBanner').classList.remove('visible');
+}
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+
+// ============================================================
+// INIT
+// ============================================================
+
+function initApp() {
+  state.currentPhase = calculatePhase(state.surgeryDate);
+  updateSidebarUser();
+  renderHome();
+}
+
+if (!state.onboardingComplete) {
+  showOnboarding();
+} else {
+  document.getElementById('onboarding').style.display = 'none';
+  document.getElementById('app').style.display = '';
+  initApp();
+}
+</script>
+</body>
+</html>
