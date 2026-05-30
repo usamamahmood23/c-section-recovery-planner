@@ -77,20 +77,28 @@ a { color: var(--color-primary-dark); text-decoration: none; }
 .app-container { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
 .main-content { flex: 1; padding: 1rem; padding-top: max(1rem, env(safe-area-inset-top)); padding-bottom: calc(80px + env(safe-area-inset-bottom)); width: 100%; max-width: 100%; }
 
-/* Sidebar (desktop) */
+/* Sidebar (desktop) — hidden by default on mobile */
 .sidebar { display: none; }
+
+/* Explicit mutual exclusion to prevent overlap at the breakpoint */
+@media (max-width: 767.98px) {
+  .sidebar { display: none !important; }
+  .bottom-nav { display: flex !important; }
+  .main-content { margin-left: 0 !important; }
+}
 
 /* Bottom nav (mobile) */
 .bottom-nav { display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: calc(64px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: var(--color-white); border-top: 1px solid var(--color-surface-3); z-index: 100; box-shadow: 0 -2px 12px rgba(45,36,32,0.04); }
-.bottom-nav .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--color-text-muted); padding: 6px 4px; position: relative; transition: color 0.2s; }
-.bottom-nav .nav-item i { font-size: 22px; }
-.bottom-nav .nav-item span { font-size: 10px; font-weight: 500; }
+.bottom-nav .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--color-text-muted); padding: 6px 2px; position: relative; transition: color 0.2s; cursor: pointer; min-width: 0; }
+.bottom-nav .nav-item i { font-size: 20px; }
+.bottom-nav .nav-item span { font-size: 10px; font-weight: 500; white-space: nowrap; }
 .bottom-nav .nav-item.active { color: var(--color-primary-dark); }
 .bottom-nav .nav-item.active::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 24px; height: 3px; background: var(--color-primary-dark); border-radius: 0 0 4px 4px; }
 
 @media (min-width: 768px) {
   .app-container { flex-direction: row; }
-  .sidebar { display: flex; flex-direction: column; width: 240px; min-height: 100vh; position: fixed; left: 0; top: 0; bottom: 0; background: var(--color-white); border-right: 1px solid var(--color-surface-3); padding: 1.5rem 1rem; z-index: 50; }
+  .sidebar { display: flex !important; flex-direction: column; width: 240px; min-height: 100vh; position: fixed; left: 0; top: 0; bottom: 0; background: var(--color-white); border-right: 1px solid var(--color-surface-3); padding: 1.5rem 1rem; z-index: 50; }
+  .bottom-nav { display: none !important; }
   .sidebar-brand { display: flex; align-items: center; gap: 10px; padding: 0 0.5rem 1.5rem; border-bottom: 1px solid var(--color-surface-3); margin-bottom: 1rem; }
   .sidebar-brand-icon { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)); display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; }
   .sidebar-brand-text { font-family: var(--font-heading); font-weight: 600; font-size: 16px; line-height: 1.1; }
@@ -108,7 +116,6 @@ a { color: var(--color-primary-dark); text-decoration: none; }
   .sidebar-user-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--color-primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px; }
   .sidebar-user-name { font-size: 13px; font-weight: 500; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .main-content { margin-left: 240px; padding: 2rem; padding-bottom: 2rem; max-width: 980px; }
-  .bottom-nav { display: none; }
 }
 
 /* Screen */
@@ -810,6 +817,7 @@ a { color: var(--color-primary-dark); text-decoration: none; }
     <a class="nav-item" data-screen="screen-workout" onclick="navigate('screen-workout')"><i class="ti ti-player-play"></i><span>Workout</span></a>
     <a class="nav-item" data-screen="screen-progress" onclick="navigate('screen-progress')"><i class="ti ti-chart-line"></i><span>Progress</span></a>
     <a class="nav-item" data-screen="screen-journal" onclick="navigate('screen-journal')"><i class="ti ti-notebook"></i><span>Journal</span></a>
+    <a class="nav-item" onclick="openMoreMenu()"><i class="ti ti-dots"></i><span>More</span></a>
   </nav>
 </div>
 
@@ -1218,9 +1226,11 @@ function renderHome() {
     mEl.appendChild(el);
   });
 
-  // Disclaimer banner: dismissed within last 7 days?
+  // Disclaimer banner: hidden if dismissed permanently OR within last 7 days
   const banner = document.getElementById('homeDisclaimer');
-  if (state.dismissedDisclaimer && daysBetween(state.dismissedDisclaimer, todayISO()) < 7) {
+  const dismissedFlag = localStorage.getItem('csrp_disclaimer_dismissed');
+  const recentlyDismissed = state.dismissedDisclaimer && daysBetween(state.dismissedDisclaimer, todayISO()) < 7;
+  if (dismissedFlag || recentlyDismissed) {
     banner.style.display = 'none';
   } else {
     banner.style.display = 'flex';
@@ -1230,6 +1240,7 @@ function renderHome() {
 function dismissDisclaimer() {
   state.dismissedDisclaimer = todayISO();
   saveState();
+  try { localStorage.setItem('csrp_disclaimer_dismissed', '1'); } catch(e) {}
   document.getElementById('homeDisclaimer').style.display = 'none';
 }
 
@@ -1305,16 +1316,24 @@ function renderExercises() {
   renderExerciseGrid();
 }
 
+function isExerciseUnlocked(ex) {
+  // Phase-based unlock — always allow exercises at or below the user's current recovery phase.
+  if (ex.phase <= (state.currentPhase || 1)) return true;
+  // Clearance overrides: full clearance unlocks everything; 6-week clearance unlocks up to phase 3.
+  if (state.clearanceLevel >= 2) return true;
+  if (state.clearanceLevel >= 1 && ex.phase <= 3) return true;
+  return false;
+}
+
 function renderExerciseGrid() {
   const grid = document.getElementById('exerciseGrid');
-  const phase = state.currentPhase;
   const filtered = EXERCISES.filter(e => {
     if (exFilter.cat !== 'all' && e.cat !== exFilter.cat) return false;
     if (exFilter.q && !e.name.toLowerCase().includes(exFilter.q)) return false;
     return true;
   });
   grid.innerHTML = filtered.map(e => {
-    const locked = e.phase > phase;
+    const locked = !isExerciseUnlocked(e);
     return `
       <div class="exercise-card ${locked ? 'locked' : ''}" onclick="openExerciseDetail(${e.id})">
         ${locked ? '<div class="lock-overlay"><i class="ti ti-lock"></i></div>' : ''}
@@ -1333,7 +1352,7 @@ function renderExerciseGrid() {
 function openExerciseDetail(id) {
   const e = EXERCISES.find(x => x.id === id);
   if (!e) return;
-  const locked = e.phase > state.currentPhase;
+  const locked = !isExerciseUnlocked(e);
   showSheet(`
     <div class="row mb-1"><span class="exercise-cat ${e.catKey}">${e.cat}</span><span class="text-sm text-muted">Phase ${e.phase}</span></div>
     <h2 class="sheet-title">${e.name}</h2>
@@ -1509,7 +1528,7 @@ function completeWorkout() {
   document.querySelector('.timer-ring').innerHTML = `
     <div style="display:flex; justify-content:center; gap:8px; padding:30px;">
       ${[['😩','rough'],['😕','low'],['😐','okay'],['🙂','good'],['💪','great']].map(([emo, key]) => `
-        <button class="mood-btn" style="flex:0 0 56px;" onclick="rateWorkout('${key}')">${emo}</button>
+        <button class="mood-btn" style="flex:0 0 56px;" onclick="rateWorkout('${key}', this)">${emo}</button>
       `).join('')}
     </div>
   `;
@@ -1519,10 +1538,10 @@ function completeWorkout() {
 }
 
 let lastWorkoutMood = null;
-function rateWorkout(mood) {
+function rateWorkout(mood, btn) {
   lastWorkoutMood = mood;
   document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
-  event.currentTarget.classList.add('active');
+  if (btn) btn.classList.add('active');
 }
 
 function finishWorkoutComplete() {
@@ -1692,6 +1711,7 @@ function saveMeasurement() {
   saveState();
   closeSheet();
   renderMeasurements();
+  showToast('Measurement saved ✓');
 }
 
 // ============================================================
@@ -1830,6 +1850,7 @@ function saveEntry() {
   saveState();
   closeSheet();
   renderJournal();
+  showToast('Journal entry saved ✓');
 
   if (pain >= 7) {
     setTimeout(() => {
@@ -1885,7 +1906,13 @@ function renderProfile() {
   document.getElementById('profDays').textContent = 'Day ' + daysSinceSurgery() + ' of recovery';
   document.getElementById('profPhase').textContent = 'Phase ' + state.currentPhase + ' · ' + PHASE_INFO[state.currentPhase].name;
   document.getElementById('profClearance').value = state.clearanceLevel;
-  document.getElementById('profClearance').onchange = e => { state.clearanceLevel = parseInt(e.target.value); saveState(); };
+  document.getElementById('profClearance').onchange = e => {
+    state.clearanceLevel = parseInt(e.target.value);
+    saveState();
+    showToast('Clearance updated ✓');
+    // Re-render exercise grid so any newly-unlocked items lose their lock overlay
+    if (document.getElementById('screen-exercises').classList.contains('active')) renderExerciseGrid();
+  };
 
   document.querySelectorAll('#profGoals .pill').forEach(p => {
     const g = p.dataset.goal;
@@ -1950,7 +1977,7 @@ function openEditProfile() {
 function saveProfile() {
   const name = document.getElementById('epName').value.trim();
   const date = document.getElementById('epDate').value;
-  if (!name || !date) { alert('Please fill in all fields'); return; }
+  if (!name || !date) { showToast('Please fill in all fields', 'error'); return; }
   state.userName = name;
   state.surgeryDate = date;
   state.currentPhase = calculatePhase(date);
@@ -1958,12 +1985,18 @@ function saveProfile() {
   closeSheet();
   renderProfile();
   updateSidebarUser();
+  renderHome();
+  showToast('Profile updated ✓');
 }
 
 function resetApp() {
-  if (!confirm('This will delete all your data. Are you sure?')) return;
-  if (!confirm('Really delete everything? This cannot be undone.')) return;
+  const ok = confirm(
+    'This will permanently delete all your recovery data — workouts, journal entries, ' +
+    'measurements, and progress.\n\nThis cannot be undone. Are you sure?'
+  );
+  if (!ok) return;
   localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem('csrp_disclaimer_dismissed');
   location.reload();
 }
 
@@ -1980,6 +2013,43 @@ function showSheet(html) {
 function closeSheet() {
   document.getElementById('sheet').classList.remove('open');
   document.getElementById('sheetBackdrop').classList.remove('open');
+}
+
+function openMoreMenu() {
+  showSheet(`
+    <h2 class="sheet-title">More</h2>
+    <div class="text-secondary text-sm mb-2">Other sections of the app</div>
+    <button class="btn btn-secondary btn-block btn-lg mb-1" onclick="closeSheet();navigate('screen-learn')" style="justify-content: flex-start;"><i class="ti ti-book"></i> Learn — understand your recovery</button>
+    <button class="btn btn-secondary btn-block btn-lg" onclick="closeSheet();navigate('screen-profile')" style="justify-content: flex-start;"><i class="ti ti-user"></i> Profile &amp; settings</button>
+  `);
+}
+
+// Toast notification helper (used for journal save, measurement save, etc.)
+function showToast(message, type) {
+  const existing = document.getElementById('csrp-toast');
+  if (existing) existing.remove();
+  const toast = document.createElement('div');
+  toast.id = 'csrp-toast';
+  const bg = type === 'error' ? '#E07070' : type === 'warn' ? '#C47A7D' : '#2D2420';
+  toast.style.cssText = `
+    position: fixed; bottom: calc(90px + env(safe-area-inset-bottom)); left: 50%;
+    transform: translateX(-50%) translateY(20px); background: ${bg}; color: #fff;
+    padding: 12px 22px; border-radius: 24px; font-size: 13px; font-weight: 500;
+    font-family: 'DM Sans', sans-serif; z-index: 10000; opacity: 0;
+    transition: opacity 0.25s, transform 0.25s; box-shadow: 0 6px 20px rgba(45,36,32,0.18);
+    max-width: calc(100vw - 2rem); text-align: center;
+  `;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  requestAnimationFrame(() => {
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+  });
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(-50%) translateY(20px)';
+    setTimeout(() => toast.remove(), 250);
+  }, 2500);
 }
 
 // ============================================================
