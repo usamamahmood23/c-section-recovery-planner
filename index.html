@@ -3,12 +3,30 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<meta name="description" content="Your guided fitness planner for C-section recovery — phase-based exercises, journal, and progress tracking." />
 <meta name="theme-color" content="#E8B4B8" />
+<meta name="color-scheme" content="light" />
+
+<!-- PWA: iOS Safari -->
 <meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="CS Recovery" />
-<link rel="manifest" href="manifest.json" />
-<link rel="apple-touch-icon" href="icon-192.png" />
+<meta name="application-name" content="CS Recovery" />
+
+<!-- Manifest -->
+<link rel="manifest" href="/manifest.json" />
+
+<!-- Icons -->
+<link rel="icon" type="image/png" sizes="64x64" href="/icons/favicon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png" />
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+<link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152.png" />
+<link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-167.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180.png" />
+<link rel="mask-icon" href="/icons/icon-192.png" color="#E8B4B8" />
+
 <title>C-Section Recovery Planner</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1984,14 +2002,40 @@ window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
   if (!state.installDismissed) {
+    // Show banner after 20s so user sees the app first
     setTimeout(() => {
-      document.getElementById('installBanner').classList.add('visible');
-    }, 30000);
+      if (deferredPrompt) document.getElementById('installBanner').classList.add('visible');
+    }, 20000);
   }
 });
 
+window.addEventListener('appinstalled', () => {
+  deferredPrompt = null;
+  document.getElementById('installBanner').classList.remove('visible');
+  state.installDismissed = true;
+  saveState();
+});
+
 function doInstall() {
-  if (!deferredPrompt) return;
+  if (!deferredPrompt) {
+    // iOS fallback: show install instructions
+    showSheet(`
+      <h2 class="sheet-title">Install on your device</h2>
+      <p class="text-secondary mb-2">On iPhone/iPad (Safari):</p>
+      <ol class="steps-list">
+        <li>Tap the <strong>Share</strong> button at the bottom of the browser</li>
+        <li>Scroll down and tap <strong>Add to Home Screen</strong></li>
+        <li>Tap <strong>Add</strong> in the top right</li>
+      </ol>
+      <p class="text-secondary mt-2 mb-2">On Android (Chrome):</p>
+      <ol class="steps-list">
+        <li>Tap the <strong>⋮</strong> menu button</li>
+        <li>Tap <strong>Install app</strong> or <strong>Add to Home screen</strong></li>
+      </ol>
+      <button class="btn btn-primary btn-block mt-2" onclick="closeSheet()">Got it</button>
+    `);
+    return;
+  }
   deferredPrompt.prompt();
   deferredPrompt.userChoice.then(() => {
     deferredPrompt = null;
@@ -2005,9 +2049,39 @@ function dismissInstall() {
   document.getElementById('installBanner').classList.remove('visible');
 }
 
+// Show install button for iOS users (they don't get beforeinstallprompt)
+function maybeShowIosInstallHint() {
+  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  if (isIos && !isStandalone && !state.installDismissed) {
+    setTimeout(() => document.getElementById('installBanner').classList.add('visible'), 25000);
+  }
+}
+maybeShowIosInstallHint();
+
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
+    navigator.serviceWorker.register('/sw.js', { scope: '/' })
+      .then(reg => {
+        // Auto-update on new versions
+        reg.addEventListener('updatefound', () => {
+          const nw = reg.installing;
+          if (!nw) return;
+          nw.addEventListener('statechange', () => {
+            if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+              nw.postMessage({ type: 'SKIP_WAITING' });
+            }
+          });
+        });
+      })
+      .catch(err => console.warn('SW registration failed', err));
+
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (refreshing) return;
+      refreshing = true;
+      window.location.reload();
+    });
   });
 }
 
