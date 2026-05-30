@@ -32,7 +32,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/tabler-icons.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
 <style>
@@ -88,12 +88,16 @@ a { color: var(--color-primary-dark); text-decoration: none; }
 }
 
 /* Bottom nav (mobile) */
-.bottom-nav { display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: calc(64px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: var(--color-white); border-top: 1px solid var(--color-surface-3); z-index: 100; box-shadow: 0 -2px 12px rgba(45,36,32,0.04); }
-.bottom-nav .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--color-text-muted); padding: 6px 2px; position: relative; transition: color 0.2s; cursor: pointer; min-width: 0; }
-.bottom-nav .nav-item i { font-size: 20px; }
-.bottom-nav .nav-item span { font-size: 10px; font-weight: 500; white-space: nowrap; }
+.bottom-nav { display: flex; align-items: stretch; position: fixed; bottom: 0; left: 0; right: 0; height: calc(64px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: var(--color-white); border-top: 1px solid var(--color-surface-3); z-index: 100; box-shadow: 0 -2px 12px rgba(45,36,32,0.04); }
+.bottom-nav .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--color-text-muted); padding: 6px 2px; position: relative; transition: color 0.15s ease; cursor: pointer; min-width: 0; background: none; border: none; font-family: 'DM Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+.bottom-nav .nav-item i { font-size: 22px; line-height: 1; }
+.bottom-nav .nav-item span { font-size: 10px; font-weight: 500; white-space: nowrap; line-height: 1; }
 .bottom-nav .nav-item.active { color: var(--color-primary-dark); }
-.bottom-nav .nav-item.active::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 24px; height: 3px; background: var(--color-primary-dark); border-radius: 0 0 4px 4px; }
+.bottom-nav .nav-item.active::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 20px; height: 3px; background: var(--color-primary-dark); border-radius: 0 0 3px 3px; }
+/* Elevated center workout button */
+.bottom-nav .nav-item-elevated i { width: 48px; height: 48px; border-radius: 50%; background: var(--color-primary); color: var(--color-white); display: flex; align-items: center; justify-content: center; font-size: 22px; margin-top: -14px; box-shadow: 0 6px 16px rgba(196,122,125,0.30); transition: transform 0.15s ease; }
+.bottom-nav .nav-item-elevated.active i { background: var(--color-primary-dark); transform: scale(1.04); }
+.bottom-nav .nav-item-elevated.active::before { display: none; }
 
 @media (min-width: 768px) {
   .app-container { flex-direction: row; }
@@ -382,6 +386,60 @@ a { color: var(--color-primary-dark); text-decoration: none; }
 .list-row .label { margin-bottom: 0; color: var(--color-text-primary); font-weight: 500; font-size: 14px; }
 .list-row .sub { font-size: 12px; color: var(--color-text-secondary); }
 
+/* === Mobile top bar (Home / Exercises / Progress / Journal) === */
+.mobile-topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 0 12px; }
+.mobile-brand { font-size: 12px; font-weight: 500; color: var(--color-text-muted); letter-spacing: 0.06em; text-transform: uppercase; }
+.avatar-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--color-primary-light); border: 2px solid var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: var(--color-primary-dark); cursor: pointer; font-family: 'DM Sans', sans-serif; flex-shrink: 0; -webkit-tap-highlight-color: transparent; padding: 0; transition: transform 0.15s ease; }
+.avatar-btn:active { transform: scale(0.95); }
+
+/* === Mobile-only screen header (sub-screens) — title bar that the floating back button overlays === */
+.mobile-screen-header { display: none; align-items: center; justify-content: center; gap: 8px; padding: 12px 56px; margin: -1rem -1rem 0.75rem; padding-top: max(14px, env(safe-area-inset-top)); padding-bottom: 12px; background: var(--color-surface); border-bottom: 1px solid var(--color-surface-3); }
+.mobile-screen-header h1 { font-family: var(--font-heading); font-size: 17px; font-weight: 600; color: var(--color-text-primary); margin: 0; text-align: center; }
+.mobile-screen-header .spacer { display: none; }
+
+/* === Global back button (mobile only) === */
+.mobile-back-btn { position: fixed; top: max(14px, env(safe-area-inset-top)); left: 14px; z-index: 3000; width: 38px; height: 38px; border-radius: 50%; background: var(--color-white); border: 1px solid var(--color-surface-3); align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(45,36,32,0.10); color: var(--color-text-primary); font-size: 18px; padding: 0; -webkit-tap-highlight-color: transparent; transition: transform 0.15s ease; }
+.mobile-back-btn:active { transform: scale(0.95); }
+
+/* === Profile menu panel (full-screen slide-in from right) === */
+.profile-menu-overlay { display: none; position: fixed; inset: 0; background: rgba(45,36,32,0.35); z-index: 4000; backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
+.profile-menu-overlay.open { display: block; animation: fadeIn 0.2s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.profile-menu-panel { position: fixed; top: 0; right: 0; bottom: 0; width: min(320px, 92vw); background: var(--color-surface); z-index: 4001; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow-y: auto; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; box-shadow: -8px 0 24px rgba(45,36,32,0.20); }
+.profile-menu-panel.open { transform: translateX(0); }
+.profile-menu-head { display: flex; align-items: center; justify-content: space-between; padding: max(20px, env(safe-area-inset-top)) 18px 14px; border-bottom: 1px solid var(--color-surface-3); background: var(--color-surface); position: sticky; top: 0; z-index: 1; }
+.profile-menu-head-left { display: flex; align-items: center; gap: 12px; }
+.profile-menu-head-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--color-primary-light); border: 2px solid var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; color: var(--color-primary-dark); font-family: 'DM Sans', sans-serif; }
+.profile-menu-head-name { font-size: 15px; font-weight: 600; color: var(--color-text-primary); margin: 0; }
+.profile-menu-head-phase { font-size: 12px; color: var(--color-text-secondary); margin: 2px 0 0; }
+.profile-menu-close { width: 34px; height: 34px; border-radius: 50%; background: var(--color-surface-2); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--color-text-secondary); font-size: 18px; padding: 0; -webkit-tap-highlight-color: transparent; }
+.profile-menu-section { padding: 14px 0 6px; }
+.profile-menu-section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-muted); padding: 0 18px 6px; margin: 0; }
+.menu-row { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 18px; background: none; border: none; cursor: pointer; text-align: left; -webkit-tap-highlight-color: transparent; transition: background 0.1s ease; font-family: 'DM Sans', sans-serif; }
+.menu-row:active { background: var(--color-surface-2); }
+.menu-row-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.menu-row-text { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.menu-row-title { font-size: 14px; font-weight: 600; color: var(--color-text-primary); line-height: 1.2; }
+.menu-row-sub { font-size: 12px; color: var(--color-text-secondary); line-height: 1.3; }
+.menu-row-arrow { font-size: 18px; color: var(--color-text-muted); flex-shrink: 0; }
+.profile-menu-footer { padding: 18px 18px max(20px, env(safe-area-inset-bottom)); border-top: 1px solid var(--color-surface-3); margin-top: auto; }
+.profile-menu-version { font-size: 12px; color: var(--color-text-muted); margin: 0 0 12px; text-align: center; }
+
+/* === Mobile vs Desktop visibility for the new mobile-only chrome === */
+@media (max-width: 767.98px) {
+  .mobile-screen-header { display: flex; }
+  /* Sub-screens use the centered mobile-screen-header instead of the regular title block */
+  .screen.is-subscreen > .screen-header { display: none; }
+}
+@media (min-width: 768px) {
+  .mobile-topbar { display: none; }
+  .mobile-screen-header { display: none !important; }
+  .mobile-back-btn { display: none !important; }
+  .avatar-btn { display: none !important; }
+  .profile-menu-overlay { display: none !important; }
+  .profile-menu-panel { display: none !important; }
+}
+
 /* Helpers */
 .row { display: flex; align-items: center; gap: 10px; }
 .flex-1 { flex: 1; }
@@ -401,6 +459,78 @@ a { color: var(--color-primary-dark); text-decoration: none; }
 </style>
 </head>
 <body>
+
+<!-- Global mobile back button — shown only on sub-screens -->
+<button type="button" id="globalBackBtn" class="mobile-back-btn" onclick="goBack()" aria-label="Go back" style="display:none;">
+  <i class="ti ti-arrow-left" aria-hidden="true"></i>
+</button>
+
+<!-- Profile menu (mobile slide-in panel) -->
+<div class="profile-menu-overlay" id="profileMenuOverlay" onclick="closeProfileMenu()"></div>
+<aside class="profile-menu-panel" id="profileMenuPanel" aria-hidden="true">
+  <div class="profile-menu-head">
+    <div class="profile-menu-head-left">
+      <div class="profile-menu-head-avatar" id="profileMenuAvatar">U</div>
+      <div>
+        <p class="profile-menu-head-name" id="profileMenuName">User</p>
+        <p class="profile-menu-head-phase" id="profileMenuPhase">Phase 1 · Healing &amp; Rest</p>
+      </div>
+    </div>
+    <button type="button" class="profile-menu-close" onclick="closeProfileMenu()" aria-label="Close menu"><i class="ti ti-x" aria-hidden="true"></i></button>
+  </div>
+
+  <div class="profile-menu-section">
+    <p class="profile-menu-section-label">My Recovery</p>
+    <button type="button" class="menu-row" onclick="openMenuScreen('screen-profile')">
+      <span class="menu-row-icon" style="background:#F5DEDE;color:#C47A7D;"><i class="ti ti-user" aria-hidden="true"></i></span>
+      <span class="menu-row-text"><span class="menu-row-title">Profile</span><span class="menu-row-sub">Your details &amp; recovery setup</span></span>
+      <i class="ti ti-chevron-right menu-row-arrow" aria-hidden="true"></i>
+    </button>
+    <button type="button" class="menu-row" onclick="openMenuScreen('screen-profile')">
+      <span class="menu-row-icon" style="background:#D4EAE0;color:#4A7060;"><i class="ti ti-target" aria-hidden="true"></i></span>
+      <span class="menu-row-text"><span class="menu-row-title">Goals</span><span class="menu-row-sub">Update your recovery goals</span></span>
+      <i class="ti ti-chevron-right menu-row-arrow" aria-hidden="true"></i>
+    </button>
+  </div>
+
+  <div class="profile-menu-section">
+    <p class="profile-menu-section-label">Education</p>
+    <button type="button" class="menu-row" onclick="openMenuScreen('screen-learn')">
+      <span class="menu-row-icon" style="background:#E6F1FB;color:#185FA5;"><i class="ti ti-book" aria-hidden="true"></i></span>
+      <span class="menu-row-text"><span class="menu-row-title">Learn</span><span class="menu-row-sub">Recovery guides &amp; education</span></span>
+      <i class="ti ti-chevron-right menu-row-arrow" aria-hidden="true"></i>
+    </button>
+    <button type="button" class="menu-row" onclick="openMenuScreen('screen-learn')">
+      <span class="menu-row-icon" style="background:#FAE0E0;color:#A03030;"><i class="ti ti-alert-triangle" aria-hidden="true"></i></span>
+      <span class="menu-row-text"><span class="menu-row-title">Red Flags</span><span class="menu-row-sub">When to contact your doctor</span></span>
+      <i class="ti ti-chevron-right menu-row-arrow" aria-hidden="true"></i>
+    </button>
+  </div>
+
+  <div class="profile-menu-section">
+    <p class="profile-menu-section-label">Settings</p>
+    <button type="button" class="menu-row" onclick="openMenuScreen('screen-profile')">
+      <span class="menu-row-icon" style="background:#FAF0D0;color:#8B6520;"><i class="ti ti-bell" aria-hidden="true"></i></span>
+      <span class="menu-row-text"><span class="menu-row-title">Notifications</span><span class="menu-row-sub">Reminders &amp; alerts</span></span>
+      <i class="ti ti-chevron-right menu-row-arrow" aria-hidden="true"></i>
+    </button>
+    <button type="button" class="menu-row" onclick="openMenuScreen('screen-profile')">
+      <span class="menu-row-icon" style="background:#D4EAE0;color:#0F6E56;"><i class="ti ti-clock" aria-hidden="true"></i></span>
+      <span class="menu-row-text"><span class="menu-row-title">Reminders</span><span class="menu-row-sub">Workout &amp; hydration times</span></span>
+      <i class="ti ti-chevron-right menu-row-arrow" aria-hidden="true"></i>
+    </button>
+    <button type="button" class="menu-row" onclick="openMenuScreen('screen-profile')">
+      <span class="menu-row-icon" style="background:#F1EFE8;color:#5F5E5A;"><i class="ti ti-settings" aria-hidden="true"></i></span>
+      <span class="menu-row-text"><span class="menu-row-title">Settings</span><span class="menu-row-sub">App preferences &amp; data</span></span>
+      <i class="ti ti-chevron-right menu-row-arrow" aria-hidden="true"></i>
+    </button>
+  </div>
+
+  <div class="profile-menu-footer">
+    <p class="profile-menu-version">C-Section Recovery Planner · v1.0.0</p>
+    <button type="button" class="btn btn-secondary btn-block" onclick="closeProfileMenu();resetApp();" style="color:var(--color-danger);border:1px solid var(--color-danger-light);"><i class="ti ti-trash"></i> Reset App Data</button>
+  </div>
+</aside>
 
 <!-- Onboarding Overlay -->
 <div class="onboarding-overlay" id="onboarding" style="display:none;">
@@ -510,6 +640,10 @@ a { color: var(--color-primary-dark); text-decoration: none; }
 
     <!-- HOME SCREEN -->
     <section class="screen active" id="screen-home">
+      <div class="mobile-topbar">
+        <div class="mobile-brand">CS Recovery</div>
+        <button type="button" class="avatar-btn js-avatar" onclick="openProfileMenu()" aria-label="Open profile menu">U</button>
+      </div>
       <div class="disclaimer-banner" id="homeDisclaimer">
         <i class="ti ti-info-circle"></i>
         <span>Always follow your doctor's advice. This app is a guide, not a medical prescription.</span>
@@ -577,6 +711,7 @@ a { color: var(--color-primary-dark); text-decoration: none; }
           <div class="screen-title">Exercises</div>
           <div class="screen-subtitle">Phase-safe movements for every stage</div>
         </div>
+        <button type="button" class="avatar-btn js-avatar" onclick="openProfileMenu()" aria-label="Open profile menu">U</button>
       </div>
       <div class="search-box">
         <i class="ti ti-search"></i>
@@ -601,6 +736,7 @@ a { color: var(--color-primary-dark); text-decoration: none; }
           <div class="screen-title">Workouts</div>
           <div class="screen-subtitle">Phase-tailored sessions, 15–30 min</div>
         </div>
+        <button type="button" class="avatar-btn js-avatar" onclick="openProfileMenu()" aria-label="Open profile menu">U</button>
       </div>
       <div id="workoutList"></div>
     </section>
@@ -612,6 +748,7 @@ a { color: var(--color-primary-dark); text-decoration: none; }
           <div class="screen-title">Progress</div>
           <div class="screen-subtitle">Look back at how far you've come</div>
         </div>
+        <button type="button" class="avatar-btn js-avatar" onclick="openProfileMenu()" aria-label="Open profile menu">U</button>
       </div>
 
       <div class="card mb-2">
@@ -663,6 +800,7 @@ a { color: var(--color-primary-dark); text-decoration: none; }
           <div class="screen-title">Journal</div>
           <div class="screen-subtitle">Track how you're feeling, day by day</div>
         </div>
+        <button type="button" class="avatar-btn js-avatar" onclick="openProfileMenu()" aria-label="Open profile menu">U</button>
       </div>
 
       <div class="calendar mb-2">
@@ -681,7 +819,8 @@ a { color: var(--color-primary-dark); text-decoration: none; }
     </section>
 
     <!-- LEARN SCREEN -->
-    <section class="screen" id="screen-learn">
+    <section class="screen is-subscreen" id="screen-learn">
+      <div class="mobile-screen-header"><div class="spacer"></div><h1>Learn</h1><div class="spacer"></div></div>
       <div class="screen-header">
         <div>
           <div class="screen-title">Learn</div>
@@ -726,7 +865,8 @@ a { color: var(--color-primary-dark); text-decoration: none; }
     </section>
 
     <!-- PROFILE SCREEN -->
-    <section class="screen" id="screen-profile">
+    <section class="screen is-subscreen" id="screen-profile">
+      <div class="mobile-screen-header"><div class="spacer"></div><h1>Profile</h1><div class="spacer"></div></div>
       <div class="screen-header">
         <div>
           <div class="screen-title">Profile</div>
@@ -812,12 +952,11 @@ a { color: var(--color-primary-dark); text-decoration: none; }
 
   <!-- Bottom Nav -->
   <nav class="bottom-nav">
-    <a class="nav-item active" data-screen="screen-home" onclick="navigate('screen-home')"><i class="ti ti-home"></i><span>Home</span></a>
-    <a class="nav-item" data-screen="screen-exercises" onclick="navigate('screen-exercises')"><i class="ti ti-run"></i><span>Exercises</span></a>
-    <a class="nav-item" data-screen="screen-workout" onclick="navigate('screen-workout')"><i class="ti ti-player-play"></i><span>Workout</span></a>
-    <a class="nav-item" data-screen="screen-progress" onclick="navigate('screen-progress')"><i class="ti ti-chart-line"></i><span>Progress</span></a>
-    <a class="nav-item" data-screen="screen-journal" onclick="navigate('screen-journal')"><i class="ti ti-notebook"></i><span>Journal</span></a>
-    <a class="nav-item" onclick="openMoreMenu()"><i class="ti ti-dots"></i><span>More</span></a>
+    <button type="button" class="nav-item active" data-screen="screen-home" onclick="navigate('screen-home')"><i class="ti ti-home" aria-hidden="true"></i><span>Home</span></button>
+    <button type="button" class="nav-item" data-screen="screen-exercises" onclick="navigate('screen-exercises')"><i class="ti ti-barbell" aria-hidden="true"></i><span>Exercises</span></button>
+    <button type="button" class="nav-item nav-item-elevated" data-screen="screen-workout" onclick="navigate('screen-workout')"><i class="ti ti-player-play" aria-hidden="true"></i><span>Workout</span></button>
+    <button type="button" class="nav-item" data-screen="screen-progress" onclick="navigate('screen-progress')"><i class="ti ti-chart-bar" aria-hidden="true"></i><span>Progress</span></button>
+    <button type="button" class="nav-item" data-screen="screen-journal" onclick="navigate('screen-journal')"><i class="ti ti-notebook" aria-hidden="true"></i><span>Journal</span></button>
   </nav>
 </div>
 
@@ -1120,12 +1259,26 @@ function seedDemoData() {
 // NAVIGATION
 // ============================================================
 
-function navigate(screenId) {
+// ===== Navigation =====
+// Bottom-nav main tabs (no back button). Anything else is treated as a sub-screen.
+const MAIN_TAB_SCREENS = ['screen-home', 'screen-exercises', 'screen-workout', 'screen-progress', 'screen-journal'];
+const navHistory = [];
+
+function navigate(screenId, opts) {
+  opts = opts || {};
+  const currentEl = document.querySelector('.screen.active');
+  const currentId = currentEl ? currentEl.id : null;
+  // Push current onto history unless we're navigating back (opts.fromBack === true)
+  if (!opts.fromBack && currentId && currentId !== screenId) {
+    navHistory.push(currentId);
+    if (navHistory.length > 12) navHistory.shift();
+  }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const target = document.getElementById(screenId);
   if (target) target.classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.querySelectorAll('[data-screen="' + screenId + '"]').forEach(n => n.classList.add('active'));
+  document.querySelectorAll('.nav-item[data-screen="' + screenId + '"]').forEach(n => n.classList.add('active'));
+  updateBackButton(screenId);
   window.scrollTo(0, 0);
   if (screenId === 'screen-progress') renderProgressCharts();
   if (screenId === 'screen-journal') renderJournal();
@@ -1134,6 +1287,63 @@ function navigate(screenId) {
   if (screenId === 'screen-home') renderHome();
   if (screenId === 'screen-learn') renderLearn();
   if (screenId === 'screen-profile') renderProfile();
+}
+
+function goBack() {
+  if (navHistory.length > 0) {
+    const prev = navHistory.pop();
+    navigate(prev, { fromBack: true });
+  } else {
+    navigate('screen-home', { fromBack: true });
+  }
+}
+
+function updateBackButton(screenId) {
+  const isSubScreen = !MAIN_TAB_SCREENS.includes(screenId);
+  const back = document.getElementById('globalBackBtn');
+  if (back) back.style.display = isSubScreen ? 'flex' : 'none';
+}
+
+// ===== Profile menu (mobile slide-in) =====
+function openProfileMenu() {
+  const panel = document.getElementById('profileMenuPanel');
+  const overlay = document.getElementById('profileMenuOverlay');
+  if (!panel || !overlay) return;
+  const name = state.userName || 'User';
+  const initials = getInitials(name);
+  const phase = state.currentPhase || 1;
+  document.getElementById('profileMenuName').textContent = name;
+  document.getElementById('profileMenuAvatar').textContent = initials;
+  document.getElementById('profileMenuPhase').textContent = 'Phase ' + phase + ' · ' + (PHASE_INFO[phase] ? PHASE_INFO[phase].name : '');
+  overlay.classList.add('open');
+  panel.getBoundingClientRect(); // force reflow so the transform transition runs
+  panel.classList.add('open');
+  panel.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeProfileMenu() {
+  const panel = document.getElementById('profileMenuPanel');
+  const overlay = document.getElementById('profileMenuOverlay');
+  if (panel) { panel.classList.remove('open'); panel.setAttribute('aria-hidden', 'true'); }
+  if (overlay) setTimeout(() => overlay.classList.remove('open'), 250);
+  document.body.style.overflow = '';
+}
+
+function openMenuScreen(screenId) {
+  closeProfileMenu();
+  setTimeout(() => navigate(screenId), 280);
+}
+
+// Sync avatar initials wherever they appear (sidebar, top-bar buttons, panel header)
+function renderUserInfo() {
+  const name = state.userName || 'User';
+  const initials = getInitials(name);
+  document.querySelectorAll('.js-avatar').forEach(el => el.textContent = initials);
+  const av = document.getElementById('profileMenuAvatar');
+  if (av) av.textContent = initials;
+  const nm = document.getElementById('profileMenuName');
+  if (nm) nm.textContent = name;
 }
 
 // ============================================================
@@ -2015,15 +2225,6 @@ function closeSheet() {
   document.getElementById('sheetBackdrop').classList.remove('open');
 }
 
-function openMoreMenu() {
-  showSheet(`
-    <h2 class="sheet-title">More</h2>
-    <div class="text-secondary text-sm mb-2">Other sections of the app</div>
-    <button class="btn btn-secondary btn-block btn-lg mb-1" onclick="closeSheet();navigate('screen-learn')" style="justify-content: flex-start;"><i class="ti ti-book"></i> Learn — understand your recovery</button>
-    <button class="btn btn-secondary btn-block btn-lg" onclick="closeSheet();navigate('screen-profile')" style="justify-content: flex-start;"><i class="ti ti-user"></i> Profile &amp; settings</button>
-  `);
-}
-
 // Toast notification helper (used for journal save, measurement save, etc.)
 function showToast(message, type) {
   const existing = document.getElementById('csrp-toast');
@@ -2060,6 +2261,7 @@ function updateSidebarUser() {
   document.getElementById('sbAvatar').textContent = getInitials(state.userName);
   document.getElementById('sbUserName').textContent = state.userName || 'User';
   document.getElementById('sbPhaseName').textContent = 'Phase ' + state.currentPhase + ' · ' + PHASE_INFO[state.currentPhase].name;
+  renderUserInfo();
 }
 
 // ============================================================
